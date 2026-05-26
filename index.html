@@ -1,0 +1,1037 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>BOOT RH Empresa — Admin</title>
+<style>
+:root{
+  --bg:#111b21;--panel:#202c33;--panel2:#2a3942;--panel3:#1f2c34;
+  --text:#e9edef;--muted:#8696a0;--accent:#00a884;--accent2:#005c4b;
+  --danger:#ef4444;--warn:#f0a500;--border:rgba(134,150,160,.15);
+  --bubble-in:#202c33;--bubble-out:#005c4b;--bubble-human:#1f2937;
+  --header:#202c33;--sidebar:#111b21;--search-bg:#2a3942;
+  --item-hover:#2a3942;--item-active:#2a3942;
+  --pill-bg:rgba(134,150,160,.12);
+  --radius-bubble:8px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+
+/* ─── HEADER ─────────────────────────────────────── */
+header{
+  height:60px;min-height:60px;
+  padding:0 16px;background:var(--header);
+  border-bottom:1px solid var(--border);
+  display:flex;justify-content:space-between;align-items:center;
+  flex-shrink:0;
+}
+header .logo{display:flex;align-items:center;gap:10px;}
+header .logo-icon{width:40px;height:40px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+header .logo-text{font-weight:700;font-size:15px;line-height:1.2;}
+header .logo-sub{font-size:11px;color:var(--muted);}
+header .header-right{display:flex;align-items:center;gap:10px;}
+.small{color:var(--muted);font-size:12px;}
+
+/* ─── LAYOUT ─────────────────────────────────────── */
+.wrap{flex:1;display:grid;grid-template-columns:minmax(320px,30%) 1fr;min-height:0;overflow:hidden;}
+
+/* ─── SIDEBAR ────────────────────────────────────── */
+.sidebar{background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;min-height:0;overflow:hidden;}
+.search{padding:8px 12px;background:var(--sidebar);flex-shrink:0;}
+.search input{
+  width:100%;padding:9px 14px 9px 38px;border-radius:8px;border:none;
+  background:var(--search-bg);color:var(--text);outline:none;font-size:14px;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%238696a0' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.099zm-5.44 1.406a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:12px center;
+}
+.search input::placeholder{color:var(--muted);}
+.list{flex:1;overflow-y:auto;overflow-x:hidden;}
+.list::-webkit-scrollbar{width:6px;}
+.list::-webkit-scrollbar-thumb{background:rgba(255,255,255,.08);border-radius:3px;}
+
+/* ─── TABS ───────────────────────────────────────── */
+.tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0;}
+.tab{
+  flex:1;background:transparent;border:none;border-bottom:2px solid transparent;
+  color:var(--muted);padding:10px 4px;cursor:pointer;font-size:12px;font-weight:500;
+  transition:color .15s,border-color .15s;
+}
+.tab.active{border-bottom-color:var(--accent);color:var(--accent);}
+.tab:hover:not(.active){color:var(--text);}
+
+/* ─── CONVERSA ITEM ──────────────────────────────── */
+.item{
+  padding:12px 16px;border-bottom:1px solid var(--border);
+  cursor:pointer;user-select:none;transition:background .1s;
+  display:flex;align-items:center;gap:12px;
+}
+.item *{pointer-events:none;}
+.item:hover{background:var(--item-hover);}
+.item.active{background:var(--item-active);}
+.item-avatar{
+  width:49px;height:49px;border-radius:50%;flex-shrink:0;
+  background:var(--panel2);display:flex;align-items:center;justify-content:center;
+  font-size:20px;font-weight:700;color:var(--muted);
+}
+.item-avatar.blocked-av{background:rgba(239,68,68,.15);color:#ef4444;}
+.item-body{flex:1;min-width:0;}
+.item-row1{display:flex;justify-content:space-between;align-items:baseline;gap:6px;margin-bottom:3px;}
+.name{font-weight:600;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;}
+.item-time{font-size:11px;color:var(--muted);white-space:nowrap;flex-shrink:0;}
+.item-row2{display:flex;justify-content:space-between;align-items:center;gap:6px;}
+.item-preview{font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;}
+.unread{min-width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;border-radius:50%;background:var(--accent);color:#062f27;font-weight:700;font-size:11px;padding:0 5px;flex-shrink:0;}
+.pill{font-size:11px;padding:2px 7px;border-radius:999px;background:var(--pill-bg);color:var(--muted);white-space:nowrap;}
+.pill.green{color:var(--accent);background:rgba(0,168,132,.12);}
+.pill.yellow{color:var(--warn);background:rgba(240,165,0,.12);}
+.pill.red{color:#ef4444;background:rgba(239,68,68,.12);}
+.pill.gray{color:var(--muted);background:var(--pill-bg);}
+.pill.blue{color:#60a5fa;background:rgba(96,165,250,.12);}
+.pill.topic{font-size:10px;}
+.pill.topic.blue{background:rgba(60,145,255,.14);border:1px solid rgba(60,145,255,.3);color:rgba(200,225,255,.95);}
+.pill.topic.purple{background:rgba(170,90,255,.14);border:1px solid rgba(170,90,255,.3);color:rgba(230,210,255,.95);}
+.pill.topic.teal{background:rgba(0,200,180,.14);border:1px solid rgba(0,200,180,.3);color:rgba(200,255,245,.95);}
+.pill.topic.orange{background:rgba(255,170,0,.14);border:1px solid rgba(255,170,0,.3);color:rgba(255,235,200,.95);}
+.pill.topic.red{background:rgba(255,80,80,.14);border:1px solid rgba(255,80,80,.3);color:rgba(255,210,210,.95);}
+
+/* ─── MAIN CHAT ──────────────────────────────────── */
+main{display:flex;flex-direction:column;min-height:0;background:var(--bg);position:relative;}
+/* fundo liso */
+
+.chatHeader{
+  padding:10px 16px;background:var(--header);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:12px;flex-shrink:0;min-height:60px;z-index:1;
+}
+.chatHeader-avatar{width:40px;height:40px;border-radius:50%;background:var(--panel2);display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:700;color:var(--muted);flex-shrink:0;}
+.chatHeader-info{flex:1;min-width:0;}
+.chatHeader-name{font-weight:600;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.chatHeader-sub{font-size:12px;color:var(--muted);}
+.actions{display:flex;gap:6px;flex-wrap:wrap;flex-shrink:0;}
+button{padding:7px 12px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text);cursor:pointer;font-size:13px;transition:background .15s;}
+button:hover{background:rgba(255,255,255,.06);}
+button.primary{background:rgba(0,168,132,.15);border-color:rgba(0,168,132,.4);color:var(--accent);}
+button.primary:hover{background:rgba(0,168,132,.25);}
+button.danger{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.35);color:#ef4444;}
+button.danger:hover{background:rgba(239,68,68,.22);}
+button.warn{background:rgba(240,165,0,.12);border-color:rgba(240,165,0,.35);color:var(--warn);}
+button.warn:hover{background:rgba(240,165,0,.22);}
+
+/* ─── MENSAGENS ──────────────────────────────────── */
+.messages{flex:1;overflow-y:auto;padding:16px 10%;display:flex;flex-direction:column;gap:4px;z-index:1;}
+.messages::-webkit-scrollbar{width:6px;}
+.messages::-webkit-scrollbar-thumb{background:rgba(255,255,255,.08);border-radius:3px;}
+.bubble{
+  max-width:65%;padding:7px 10px 20px;border-radius:var(--radius-bubble);
+  white-space:pre-wrap;word-break:break-word;position:relative;font-size:14px;line-height:1.4;
+}
+.bubble.in{align-self:flex-start;background:var(--bubble-in);border-top-left-radius:0;}
+.bubble.out{align-self:flex-end;background:var(--bubble-out);border-top-right-radius:0;}
+.bubble.human{align-self:flex-end;background:var(--bubble-human);border-top-right-radius:0;border:1px solid rgba(255,255,255,.08);}
+.ts{position:absolute;bottom:5px;right:9px;font-size:10px;color:rgba(233,237,239,.6);white-space:nowrap;}
+.bubble-label{font-size:10px;font-weight:600;margin-bottom:3px;opacity:.7;}
+.bubble.in .bubble-label{color:var(--accent);}
+.bubble.out .bubble-label{color:rgba(255,255,255,.5);}
+.bubble.human .bubble-label{color:#93c5fd;}
+.bubble-text{word-break:break-word;white-space:pre-wrap;}
+
+/* ─── MÍDIA ──────────────────────────────────────── */
+.media-wrap{display:flex;flex-direction:column;gap:6px;margin:4px 0;}
+.media-img{max-width:260px;max-height:260px;border-radius:8px;cursor:pointer;object-fit:cover;border:1px solid rgba(255,255,255,.1);}
+.media-video{max-width:260px;border-radius:8px;outline:none;}
+.media-audio{width:220px;height:36px;border-radius:20px;}
+.media-sticker{width:120px;height:120px;object-fit:contain;}
+.media-doc{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.06);border-radius:10px;padding:10px 14px;border:1px solid rgba(255,255,255,.08);}
+.media-doc-icon{font-size:28px;flex-shrink:0;}
+.media-doc-name{font-size:13px;color:var(--text);word-break:break-all;flex:1;}
+.media-dl{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:var(--accent);text-decoration:none;padding:4px 10px;border-radius:20px;background:rgba(0,168,132,.12);border:1px solid rgba(0,168,132,.25);width:fit-content;transition:background .15s;}
+.media-dl:hover{background:rgba(0,168,132,.25);}
+
+.date-divider{align-self:center;font-size:12px;color:var(--muted);background:rgba(17,27,33,.85);padding:5px 14px;border-radius:8px;margin:8px 0;border:1px solid var(--border);}
+.empty{padding:32px;color:var(--muted);text-align:center;font-size:14px;}
+
+/* ─── COMPOSER ───────────────────────────────────── */
+.composer{
+  padding:10px 14px;border-top:1px solid var(--border);
+  display:flex;flex-direction:column;gap:8px;background:var(--panel3);flex-shrink:0;z-index:1;
+}
+.composer-row{display:flex;gap:8px;align-items:flex-end;}
+.composer textarea{
+  flex:1;resize:none;min-height:44px;max-height:140px;padding:11px 14px;
+  border-radius:10px;border:none;background:var(--search-bg);color:var(--text);
+  outline:none;font-size:14px;line-height:1.4;
+}
+.composer textarea::placeholder{color:var(--muted);}
+.attach-preview{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:8px;background:var(--search-bg);font-size:13px;color:var(--muted);}
+.attach-preview .ap-name{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.btn-attach{width:44px;height:44px;border-radius:50%;border:none;background:transparent;color:var(--muted);cursor:pointer;font-size:20px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.btn-attach:hover{color:var(--text);background:rgba(255,255,255,.06);}
+.btn-send{width:44px;height:44px;border-radius:50%;border:none;background:var(--accent);color:#fff;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.btn-send:hover{background:#00c49a;}
+
+/* ─── MODAIS ─────────────────────────────────────── */
+.modal-backdrop{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.6);z-index:9999;backdrop-filter:blur(2px);}
+.modal-box{width:min(480px,92vw);background:var(--panel);border:1px solid var(--border);border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,.5);padding:20px;}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
+.modal-title{font-weight:700;font-size:16px;}
+.modal-close{background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:20px;padding:4px;}
+.modal-close:hover{color:var(--text);}
+.field-label{font-size:12px;color:var(--muted);margin-bottom:6px;}
+.field-input{width:100%;padding:10px 14px;border-radius:8px;border:1px solid var(--border);background:var(--search-bg);color:var(--text);outline:none;font-size:14px;}
+.field-input:focus{border-color:rgba(0,168,132,.5);}
+.field-input:disabled{opacity:.6;}
+.field-grid{display:grid;gap:12px;}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:16px;}
+.modal-warn{font-size:12px;color:var(--muted);background:rgba(240,165,0,.08);border:1px solid rgba(240,165,0,.2);border-radius:8px;padding:8px 12px;margin-bottom:4px;}
+.error-text{color:#ef4444;font-size:13px;display:none;margin-top:4px;}
+
+/* ─── BOTÃO INICIAR CONVERSA ─────────────────────── */
+.meta-warning-badge{
+  display:inline-flex;align-items:center;gap:6px;padding:6px 12px;
+  border-radius:20px;border:1px solid rgba(255,180,0,.35);
+  background:rgba(255,180,0,.1);color:#f0b429;
+  font-size:12px;font-weight:500;cursor:default;user-select:none;
+}
+
+/* ─── EMPTY STATE ────────────────────────────────── */
+.chat-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:var(--muted);z-index:1;}
+.chat-empty-icon{font-size:64px;opacity:.3;}
+.chat-empty-text{font-size:16px;font-weight:500;}
+.chat-empty-sub{font-size:13px;opacity:.7;}
+
+/* ─── BLOCKED BANNER ─────────────────────────────── */
+.blocked-banner{
+  margin:8px 10%;padding:10px 16px;border-radius:8px;
+  background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);
+  color:#ef4444;font-size:13px;text-align:center;z-index:1;
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">
+    <div class="logo-icon">💼</div>
+    <div>
+      <div class="logo-text">RH Empresa — Painel</div>
+      <div class="logo-sub" id="conn" style="color:#00a884;">● Online</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="small" style="text-align:right;">Atualizado: Modo portfolio estatico</div>
+    <div class="meta-warning-badge" title="Mensagens iniciadas pelo RH fora da janela de 24h podem ser cobradas pela Meta.">⚠️ Mensagens fora da janela de 24h podem gerar cobrança pela Meta</div>
+  </div>
+</header>
+
+<div class="wrap">
+  <aside class="sidebar">
+    <div class="search">
+      <input id="q" placeholder="Pesquisar ou começar uma nova conversa"/>
+    </div>
+    <div class="tabs" id="tabs">
+      <button class="tab active" data-tab="queue">Na fila</button>
+      <button class="tab" data-tab="manual">Atendimento</button>
+      <button class="tab" data-tab="ended">Encerrados</button>
+      <button class="tab" data-tab="contacts">Contatos</button>
+    </div>
+    <div style="padding:6px 12px;display:none;" id="newContactRow">
+      <button id="btnNewContact" style="width:100%;justify-content:center;display:flex;gap:6px;">＋ Novo contato</button>
+    </div>
+    <div class="list" id="list"></div>
+  </aside>
+
+  <main>
+    <div class="chatHeader" id="chatHeader">
+      <div class="chatHeader-avatar" id="chatHeaderAvatar">💬</div>
+      <div class="chatHeader-info">
+        <div class="chatHeader-name" id="contactName">Selecione uma conversa</div>
+        <div class="chatHeader-sub small" id="contactSub">Nenhuma conversa aberta</div>
+      </div>
+      <div class="actions" id="actions" style="display:none;">
+        <button class="primary" id="btnAssume">▶ Assumir</button>
+        <button class="danger" id="btnEnd">✕ Encerrar</button>
+        <button id="btnStartConv" title="Iniciar conversa (template)" style="background:var(--accent,#25d366);color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:13px;cursor:pointer;">📨 Iniciar</button>
+        <button id="btnEditContact" title="Editar contato">✏️</button>
+        <button class="danger" id="btnBlock" title="Bloquear contato">🚫</button>
+      </div>
+    </div>
+
+    <div id="blockedBanner" class="blocked-banner" style="display:none;">🚫 Este contato está bloqueado — não receberá respostas do bot.</div>
+
+    <div class="messages" id="messages">
+      <div class="chat-empty">
+        <div class="chat-empty-icon">💬</div>
+        <div class="chat-empty-text">Painel RH Meta</div>
+        <div class="chat-empty-sub">Selecione uma conversa para começar</div>
+      </div>
+    </div>
+
+    <div class="composer" id="composer" style="display:none;">
+      <div id="attachPreview" style="display:none;" class="attach-preview">
+        <span>📎</span>
+        <span id="attachName" class="ap-name"></span>
+        <button onclick="clearAttach()" style="padding:3px 8px;font-size:12px;">✕</button>
+      </div>
+      <div class="composer-row">
+        <input type="file" id="fileInput" style="display:none;" accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip,.csv"/>
+        <button class="btn-attach" id="btnAttach" title="Enviar arquivo">📎</button>
+        <textarea id="text" placeholder="Digite uma mensagem…" rows="1"></textarea>
+        <button class="btn-send" id="btnSend" title="Enviar">➤</button>
+      </div>
+    </div>
+  </main>
+</div>
+
+
+<!-- Modal de Iniciar Conversa -->
+<div id="startModal" class="modal-backdrop">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title">Iniciar conversa</div>
+      <button class="modal-close" id="smClose">✕</button>
+    </div>
+    <div id="smContactName" style="font-weight:600;font-size:15px;padding:4px 0 2px;"></div>
+    <div class="modal-warn">⚠️ Isso envia um template WhatsApp. Se o contato não respondeu nas últimas 24h, pode gerar cobrança pela Meta.</div>
+    <div class="field-grid">
+      <div>
+        <input id="smWaId" type="hidden"/>
+      </div>
+      <div>
+        <div class="field-label">Template</div>
+        <input id="smTemplate" class="field-input" placeholder="avisos_rh"/>
+      </div>
+      <div>
+        <div class="field-label">Idioma do template</div>
+        <input id="smLang" class="field-input" placeholder="pt_BR"/>
+      </div>
+      <div id="smError" class="error-text"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="primary" id="smSend">Enviar template</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Contato -->
+<div id="contactModal" class="modal-backdrop">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title" id="cmTitle">Contato</div>
+      <button class="modal-close" id="cmClose">✕</button>
+    </div>
+    <div class="small" style="margin-bottom:12px;color:var(--muted);">O <b>WaId</b> é o identificador real do WhatsApp. O telefone editado aqui é apenas para exibição.</div>
+    <div class="field-grid">
+      <div>
+        <div class="field-label">WaId (não editável)</div>
+        <input id="cmWaId" class="field-input" disabled/>
+      </div>
+      <div>
+        <div class="field-label">Nome</div>
+        <input id="cmName" class="field-input" placeholder="Nome e sobrenome"/>
+      </div>
+      <div>
+        <div class="field-label">Telefone (exibição)</div>
+        <input id="cmPhone" class="field-input" placeholder="+55 11 9xxxx-xxxx"/>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="danger" id="cmDelete" style="display:none;">Apagar contato</button>
+      <button class="primary" id="cmSave">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+
+const STATIC_PORTFOLIO_MODE = true;
+const now = new Date();
+const iso = (minsAgo) => new Date(now.getTime() - minsAgo * 60000).toISOString();
+const DEMO_DB = { contacts: [
+  { waId:'5511999000001', name:'Colaborador 001', phone:'+55 11 99000-0001', displayPhone:'+55 11 99000-0001' },
+  { waId:'5511999000002', name:'Colaborador 002', phone:'+55 11 99000-0002', displayPhone:'+55 11 99000-0002' },
+  { waId:'5511999000003', name:'Colaborador 003', phone:'+55 11 99000-0003', displayPhone:'+55 11 99000-0003' },
+  { waId:'5511999000004', name:'Colaborador 004', phone:'+55 11 99000-0004', displayPhone:'+55 11 99000-0004' },
+  { waId:'5511999000005', name:'Colaborador 005', phone:'+55 11 99000-0005', displayPhone:'+55 11 99000-0005' }
+], conversations: [] };
+DEMO_DB.conversations = [
+  { waId:'5511999000001', name:'Colaborador 001', displayPhone:'+55 11 99000-0001', state:'handover', inQueue:true, queuePos:1, unread:3, topic:{key:'ponto', label:'Ponto'}, lastMessageAt:iso(8), lastUserMessageAt:iso(8), blocked:false, messages:[{ts:iso(42), from:'bot', text:'Ol?, eu sou o assistente virtual do RH. Como posso ajudar?'},{ts:iso(39), from:'user', text:'Preciso ajustar uma marca??o de ponto.'},{ts:iso(38), from:'bot', text:'Encaminhando para um atendente humano. Aguarde um momento.'},{ts:iso(8), from:'user', text:'Enviei o comprovante pelo aplicativo.'}] },
+  { waId:'5511999000002', name:'Colaborador 002', displayPhone:'+55 11 99000-0002', state:'manual', inQueue:false, queuePos:0, unread:0, topic:{key:'beneficios', label:'Benef?cios'}, lastMessageAt:iso(18), lastUserMessageAt:iso(31), blocked:false, messages:[{ts:iso(55), from:'user', text:'Bom dia! Tenho uma d?vida sobre vale transporte.'},{ts:iso(50), from:'bot', text:'Vou direcionar sua solicita??o para o RH.'},{ts:iso(28), from:'human', text:'Ol?! J? localizei seu cadastro e vou verificar os dados.'},{ts:iso(18), from:'human', text:'O ajuste ficar? dispon?vel na pr?xima atualiza??o.'}] },
+  { waId:'5511999000003', name:'Colaborador 003', displayPhone:'+55 11 99000-0003', state:'idle', inQueue:false, queuePos:0, unread:0, topic:{key:'holerite', label:'Holerite'}, lastMessageAt:iso(74), lastUserMessageAt:iso(76), blocked:false, messages:[{ts:iso(82), from:'bot', text:'Ol?! Escolha uma op??o para continuar.'},{ts:iso(76), from:'user', text:'Quero consultar meu holerite.'},{ts:iso(74), from:'bot', text:'Voc? pode acessar pelo portal do colaborador na ?rea de documentos.'}] },
+  { waId:'5511999000004', name:'Colaborador 004', displayPhone:'+55 11 99000-0004', state:'ended', inQueue:false, queuePos:0, unread:0, topic:{key:'ferias', label:'F?rias'}, lastMessageAt:iso(160), lastUserMessageAt:iso(190), blocked:false, messages:[{ts:iso(205), from:'user', text:'Gostaria de confirmar meu per?odo de f?rias.'},{ts:iso(180), from:'human', text:'Seu per?odo foi confirmado no sistema.'},{ts:iso(160), from:'human', text:'Atendimento encerrado. Obrigado pelo contato!'}] },
+  { waId:'5511999000005', name:'Colaborador 005', displayPhone:'+55 11 99000-0005', state:'ended', inQueue:false, queuePos:0, unread:0, topic:{key:'rescisao', label:'Documentos'}, lastMessageAt:iso(260), lastUserMessageAt:iso(280), blocked:true, messages:[{ts:iso(300), from:'user', text:'Preciso falar com o RH sobre documentos.'},{ts:iso(260), from:'system', text:'Contato bloqueado para demonstra??o do painel.'}] }
+];
+function cloneDemo(obj){ return JSON.parse(JSON.stringify(obj)); }
+function demoConversationSummary(c){ return { waId:c.waId, name:c.name, displayPhone:c.displayPhone, state:c.state, topic:c.topic, inQueue:c.inQueue, queuePos:c.queuePos, unread:c.unread, lastMessageAt:c.lastMessageAt, lastUserMessageAt:c.lastUserMessageAt, blocked:c.blocked }; }
+function demoJson(data){ return Promise.resolve({ ok:true, json:()=>Promise.resolve(cloneDemo(data)) }); }
+function demoFind(id){ return DEMO_DB.conversations.find(c => c.waId === id); }
+window.fetch = async function(url, opts={}){
+  const u = String(url); const method = (opts.method || 'GET').toUpperCase();
+  if (u.endsWith('/admin/api/conversations')) return demoJson({ conversations: DEMO_DB.conversations.map(demoConversationSummary) });
+  if (u.endsWith('/admin/api/contacts')) return demoJson({ contacts: DEMO_DB.contacts.map(c => ({...c, hasConversation: !!demoFind(c.waId)})) });
+  const convMatch = u.match(/\/admin\/api\/conversation\/([^/?]+)(?:\/([^/?]+))?/);
+  if (convMatch) { const id = decodeURIComponent(convMatch[1]); const action = convMatch[2] || ''; const conv = demoFind(id) || DEMO_DB.conversations[0];
+    if (method === 'GET') return demoJson({ conversation: conv });
+    if (action === 'mark-read') { conv.unread = 0; return demoJson({ ok:true }); }
+    if (action === 'assume') { conv.state = 'manual'; conv.inQueue = false; conv.queuePos = 0; conv.unread = 0; conv.messages.push({ts:new Date().toISOString(), from:'human', text:'Atendimento humano iniciado. Pode me explicar sua d?vida?'}); conv.lastMessageAt = conv.messages.at(-1).ts; return demoJson({ ok:true }); }
+    if (action === 'end') { conv.state = 'ended'; conv.inQueue = false; conv.messages.push({ts:new Date().toISOString(), from:'human', text:'Atendimento encerrado. Obrigado pelo contato!'}); conv.lastMessageAt = conv.messages.at(-1).ts; return demoJson({ ok:true }); }
+    if (action === 'block') { conv.blocked = true; conv.state = 'ended'; return demoJson({ ok:true, blocked:true }); }
+    if (action === 'unblock') { conv.blocked = false; return demoJson({ ok:true, blocked:false }); }
+    if (action === 'message') { const body = JSON.parse(opts.body || '{}'); conv.state = 'manual'; conv.inQueue = false; conv.messages.push({ts:new Date().toISOString(), from:'human', text:body.text || 'Mensagem de demonstra??o'}); conv.lastMessageAt = conv.messages.at(-1).ts; return demoJson({ ok:true }); }
+    if (action === 'media') { conv.messages.push({ts:new Date().toISOString(), from:'human', text:'[Anexo enviado no modo demonstra??o]'}); conv.lastMessageAt = conv.messages.at(-1).ts; return demoJson({ ok:true }); }
+    if (action === 'start') { conv.messages.push({ts:new Date().toISOString(), from:'human', text:'[Template enviado: avisos_rh]'}); conv.lastMessageAt = conv.messages.at(-1).ts; return demoJson({ ok:true, template:'avisos_rh' }); }
+  }
+  if (u.includes('/admin/api/contacts/') && method === 'DELETE') return demoJson({ ok:true });
+  if (u.endsWith('/admin/api/contacts') && method === 'POST') { const body = JSON.parse(opts.body || '{}'); const contact = { waId: body.waId, name: body.name || 'Novo contato', phone: body.phone || '', displayPhone: body.phone || ('+' + body.waId) }; DEMO_DB.contacts.push(contact); DEMO_DB.conversations.push({ ...contact, state:'idle', inQueue:false, queuePos:0, unread:0, topic:null, blocked:false, lastMessageAt:new Date().toISOString(), lastUserMessageAt:null, messages:[] }); return demoJson({ ok:true, contact }); }
+  return demoJson({ ok:true });
+};
+window.EventSource = class { constructor(){ setTimeout(()=>{ this.onopen && this.onopen({}); }, 50); } addEventListener(){} close(){} };
+
+const $=(id)=>document.getElementById(id);
+let allConvos=[]; let allContacts=[]; let activeId=null; let activeData=null; let activeIsContact=false; let openSeq=0; const convCache=new Map();
+
+function fmtTS(iso){ try{ const d=new Date(iso); return d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}); }catch(e){ return ''; } }
+function fmtDate(iso){ try{ return new Date(iso).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric'}); }catch(e){ return ''; } }
+function fmtFull(iso){ try{ return new Date(iso).toLocaleString('pt-BR'); }catch(e){ return ''; } }
+function displayName(c){ return (c.name||'').toString().trim(); }
+function displayPhone(c){ return (c.displayPhone||('+'+(c.waId||''))).toString().trim(); }
+function displayTitle(c){ const nm=displayName(c); const ph=displayPhone(c); return nm ? (nm+' — '+ph) : ph; }
+function avatarLetter(c){ const n=displayName(c)||displayPhone(c); return (n||'?')[0].toUpperCase(); }
+
+function getContactById(id){
+  return (allContacts||[]).find(c=>String(c.waId||'')===String(id||'')) || null;
+}
+
+function statusOf(c){
+  if(c.blocked) return {label:'Bloqueado', cls:'red'};
+  if(c.state==='ended') return {label:'Encerrado', cls:'gray'};
+  if(c.inQueue || c.state==='handover') {
+    const pos = Number(c.queuePos||0);
+    return {label:('Na fila ' + (pos?('#'+pos):'')).trim(), cls:'yellow'};
+  }
+  if(c.state==='manual') return {label:'Em atendimento', cls:'green'};
+  return {label:'Robô ativo', cls:'blue'};
+}
+function topicOf(c){
+  const t=c.topic;
+  if(!t || !t.key) return null;
+  const map={beneficios:'blue',ponto:'purple',folha:'teal',holerite:'teal',ferias:'orange',rescisao:'red',consignado:'blue'};
+  return {label:(t.label||'').toString(), cls:'topic '+(map[t.key]||'')};
+}
+
+function updateTabBadges(){
+  try{
+    const tabsEl = document.getElementById('tabs');
+    if(!tabsEl) return;
+    const queueCount = allConvos.filter(c => !c.blocked && (c.inQueue || c.state==='handover')).length;
+    const inProgressCount = allConvos.filter(c => {
+      if(c.blocked) return false;
+      const isQueue = (c.inQueue || c.state==='handover');
+      const isEnded = (c.state==='ended');
+      const isManual = (c.state==='manual');
+      const isRobot = (!isEnded && !isQueue && !isManual);
+      return (isManual || isRobot);
+    }).length;
+    const btnQueue = tabsEl.querySelector('[data-tab="queue"]');
+    const btnManual = tabsEl.querySelector('[data-tab="manual"]');
+    if(btnQueue) btnQueue.innerHTML = 'Na fila' + (queueCount>0 ? (' <span class="unread">'+queueCount+'</span>') : '');
+    if(btnManual) btnManual.innerHTML = 'Atendimento' + (inProgressCount>0 ? (' <span class="unread">'+inProgressCount+'</span>') : '');
+  }catch(e){}
+}
+
+// Gera o innerHTML de um item de conversa
+function _convItemHTML(c) {
+  const st=statusOf(c);
+  const unread=Number(c.unread||0);
+  const lastMsg = c.lastMessageAt ? fmtTS(c.lastMessageAt) : '';
+  const tp=topicOf(c);
+  return '<div class="item-avatar'+(c.blocked?' blocked-av':'')+'">'+avatarLetter(c)+'</div>'
+    +'<div class="item-body">'
+    +  '<div class="item-row1"><span class="name">'+(displayName(c)||displayPhone(c))+'</span><span class="item-time">'+lastMsg+'</span></div>'
+    +  '<div class="item-row2">'
+    +    '<span class="item-preview">'+(displayName(c)?displayPhone(c):'')+'</span>'
+    +    '<span class="pill '+st.cls+'">'+st.label+'</span>'
+    +    (tp?('<span class="pill '+tp.cls+'">'+tp.label+'</span>'):'')
+    +    (unread>0?'<span class="unread">'+unread+'</span>':'')
+    +  '</div>'
+    +'</div>';
+}
+
+// Gera o innerHTML de um item de contato
+function _contactItemHTML(c, convo) {
+  const unread = Number(convo?.unread||0);
+  const isBlocked = convo?.blocked || false;
+  const waId = String(c.waId||'');
+  return '<div class="item-avatar'+(isBlocked?' blocked-av':'')+'">'+avatarLetter(c)+'</div>'
+    +'<div class="item-body">'
+    +  '<div class="item-row1"><span class="name">'+(c.name||c.displayPhone||('+'+waId))+'</span>'+(unread>0?'<span class="unread">'+unread+'</span>':'')+'</div>'
+    +  '<div class="item-row2"><span class="item-preview">'+(c.displayPhone||('+'+waId))+'</span>'+(isBlocked?'<span class="pill red">Bloqueado</span>':'<span class="pill">Contato</span>')+'</div>'
+    +'</div>';
+}
+
+function renderList(){
+  updateTabBadges();
+  const currentTab=(window.__currentTab||'queue');
+  const ncRow=$('newContactRow');
+  if(ncRow) ncRow.style.display = (currentTab==='contacts') ? 'block' : 'none';
+  const q=($('q').value||'').toLowerCase().trim();
+  const list=$('list');
+
+  if(currentTab==='contacts'){
+    const filteredC=(allContacts||[]).filter(c=>{
+      if(!q) return true;
+      return String(c.name||'').toLowerCase().includes(q) || String(c.displayPhone||'').toLowerCase().includes(q) || String(c.waId||'').includes(q);
+    }).sort((a,b)=> String(a.name||'').toLowerCase().localeCompare(String(b.name||'').toLowerCase()));
+
+    if(!filteredC.length){ list.innerHTML='<div class="empty">Sem contatos.</div>'; return; }
+
+    // Patch: atualizar só o que mudou
+    const existingIds = new Set();
+    list.querySelectorAll('.item[data-kind="contact"]').forEach(el => existingIds.add(el.dataset.id));
+    const newIds = new Set(filteredC.map(c => String(c.waId||'')));
+
+    // Remover itens que saíram
+    existingIds.forEach(id => { if(!newIds.has(id)) list.querySelector('.item[data-id="'+id+'"][data-kind="contact"]')?.remove(); });
+
+    filteredC.forEach((c, idx) => {
+      const waId = String(c.waId||'');
+      const convo = (allConvos||[]).find(x=>x.waId===waId) || null;
+      const newHTML = _contactItemHTML(c, convo);
+      let el = list.querySelector('.item[data-id="'+waId+'"][data-kind="contact"]');
+      if(!el){
+        el = document.createElement('div');
+        el.className='item'+(waId===activeId?' active':'');
+        el.tabIndex=0; el.dataset.id=waId; el.dataset.kind='contact';
+        list.appendChild(el);
+      }
+      if(el.innerHTML !== newHTML) el.innerHTML = newHTML;
+      el.className='item'+(waId===activeId?' active':'');
+    });
+    return;
+  }
+
+  const filtered=allConvos.filter(c=>{
+    if(currentTab==='queue'){
+      if(c.blocked) return false;
+      if(!(c.inQueue || c.state==='handover')) return false;
+    } else if(currentTab==='manual'){
+      if(c.blocked) return false;
+      const isQueue = (c.inQueue || c.state==='handover');
+      const isEnded = (c.state==='ended');
+      const isManual = (c.state==='manual');
+      const isRobot = (!isEnded && !isQueue && !isManual);
+      if(!(isManual || isRobot)) return false;
+    } else if(currentTab==='ended'){
+      if(!c.blocked && c.state!=='ended') return false;
+    }
+    if(!q) return true;
+    return String(c.name||'').toLowerCase().includes(q) || String(c.displayPhone||'').toLowerCase().includes(q) || String(c.waId||'').includes(q);
+  }).sort((a,b)=>{
+    const ta=String(a.lastMessageAt||''); const tb=String(b.lastMessageAt||'');
+    return tb.localeCompare(ta) || String(a.waId||'').localeCompare(String(b.waId||''));
+  });
+
+  if(!filtered.length){ list.innerHTML='<div class="empty">Sem conversas.</div>'; return; }
+
+  // Patch: atualizar só o que mudou, sem recriar o DOM inteiro
+  const existingIds = new Set();
+  list.querySelectorAll('.item[data-id]').forEach(el => existingIds.add(el.dataset.id));
+  const newIds = new Set(filtered.map(c => c.waId));
+
+  // Remover itens que saíram da aba
+  existingIds.forEach(id => { if(!newIds.has(id)) list.querySelector('.item[data-id="'+id+'"]')?.remove(); });
+
+  // Atualizar ou inserir na ordem correta
+  filtered.forEach((c, idx) => {
+    const newHTML = _convItemHTML(c);
+    let el = list.querySelector('.item[data-id="'+c.waId+'"]');
+    if(!el){
+      el = document.createElement('div');
+      el.tabIndex=0; el.dataset.id=c.waId;
+      list.appendChild(el);
+    }
+    // Só atualiza innerHTML se mudou (evita piscar)
+    if(el.innerHTML !== newHTML) el.innerHTML = newHTML;
+    el.className='item'+(c.waId===activeId?' active':'');
+
+    // Garantir ordem correta na lista
+    const currentAtIndex = list.children[idx];
+    if(currentAtIndex !== el) list.insertBefore(el, currentAtIndex||null);
+  });
+}
+
+// Clique na lista
+(function bindListDelegation(){
+  const listEl = document.getElementById('list');
+  if(!listEl) return;
+  if(listEl.__bound) return;
+  listEl.__bound = true;
+  const openFromEvent = (e)=>{
+    const item = e.target && e.target.closest ? e.target.closest('.item') : null;
+    if(!item) return;
+    const id = item.dataset && item.dataset.id;
+    if(!id) return;
+    e.preventDefault(); e.stopPropagation();
+    openConversation(id);
+  };
+  listEl.addEventListener('pointerdown', openFromEvent, {capture:true});
+  listEl.addEventListener('click', openFromEvent, {capture:true});
+  listEl.addEventListener('keydown', (e)=>{
+    if(e.key!=='Enter' && e.key!==' ') return;
+    const item = e.target && e.target.closest ? e.target.closest('.item') : null;
+    if(!item) return;
+    const id = item.dataset && item.dataset.id;
+    if(!id) return;
+    e.preventDefault(); openConversation(id);
+  });
+})();
+
+async function fetchConversations(force){
+  const r=await fetch('/admin/api/conversations');
+  const data=await r.json();
+  allConvos=data.conversations||[];
+  const fp = _listFingerprint();
+  const hasQuery = !!($('q')&&$('q').value||'').trim();
+  if (force || hasQuery || fp !== _lastListFingerprint) {
+    _lastListFingerprint = fp;
+    await fetchContacts().catch(()=>{});
+    updateTabBadges();
+    renderList();
+  }
+}
+
+async function fetchContacts(){
+  const r=await fetch('/admin/api/contacts');
+  const data=await r.json();
+  const prev = _lastContactsFingerprint;
+  allContacts=data.contacts||[];
+  _lastContactsFingerprint = _contactsFingerprint();
+  return _lastContactsFingerprint !== prev; // retorna true se mudou
+}
+
+function showContactModal(opts){
+  const modal=$('contactModal');
+  if(!modal) return;
+  const isNew = !!opts?.isNew;
+  $('cmTitle').textContent = isNew ? 'Novo contato' : 'Editar contato';
+  $('cmWaId').value = (opts?.waId||'').toString();
+  $('cmName').value = (opts?.name||'').toString();
+  $('cmPhone').value = (opts?.phone||'').toString();
+  $('cmDelete').style.display = isNew ? 'none' : 'inline-flex';
+  modal.style.display='flex';
+  const close=()=>{ modal.style.display='none'; };
+  $('cmClose').onclick=close;
+  modal.onclick=(e)=>{ if(e.target===modal) close(); };
+  $('cmSave').onclick=async ()=>{
+    const body={waId:$('cmWaId').value.trim(),name:$('cmName').value.trim(),phone:$('cmPhone').value.trim()};
+    if(!body.waId) return;
+    await fetch('/admin/api/contacts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    modal.style.display='none';
+    await fetchContacts().catch(()=>{}); await fetchConversations().catch(()=>{});
+  };
+  $('cmDelete').onclick=async ()=>{
+    const id=$('cmWaId').value.trim();
+    if(!id) return;
+    await fetch('/admin/api/contacts/'+encodeURIComponent(id),{method:'DELETE'});
+    modal.style.display='none';
+    await fetchContacts().catch(()=>{}); await fetchConversations().catch(()=>{}); renderList();
+  };
+}
+
+function openNewContact(){
+  showContactModal({isNew:true, waId:'', name:'', phone:''});
+  const wa=$('cmWaId'); if(wa){ wa.disabled=false; wa.style.opacity='1'; wa.placeholder='Ex: 5511999999999'; }
+}
+function openEditContact(c){
+  const wa=$('cmWaId'); if(wa){ wa.disabled=true; wa.style.opacity='.7'; wa.placeholder=''; }
+  showContactModal({isNew:false, waId:c.waId, name:(c.name||''), phone:(c.phone||'')});
+}
+
+async function fetchConversation(waId){
+  const r=await fetch('/admin/api/conversation/'+encodeURIComponent(waId));
+  const data=await r.json();
+  try{ if(data.conversation?.waId){ convCache.set(data.conversation.waId, data.conversation); } }catch(e){}
+  return data.conversation;
+}
+
+function renderConversation(conv){
+  activeData=conv;
+  const isBlocked = conv.blocked || _panelBlockedSet.has(conv.waId);
+
+  // header
+  $('contactName').textContent=displayName(conv)||displayPhone(conv);
+  $('contactSub').textContent='WaId: '+conv.waId+' • '+( conv.state||'idle' ) + (conv.topic?.label ? (' • '+conv.topic.label) : '');
+  const av=$('chatHeaderAvatar');
+  if(av){ av.textContent=avatarLetter(conv); av.className='chatHeader-avatar'+(isBlocked?' blocked-av':''); }
+  $('actions').style.display='flex';
+  $('composer').style.display= isBlocked ? 'none' : 'flex';
+
+  // botões
+  $('btnAssume').style.display = (conv.state==='manual' || conv.state==='ended' || isBlocked) ? 'none' : 'inline-flex';
+  $('btnEnd').style.display = (conv.state==='manual' && !isBlocked) ? 'inline-flex' : 'none';
+  $('btnEditContact').style.display='inline-flex';
+  const btnBlock=$('btnBlock');
+  if(btnBlock){
+    if(isBlocked){ btnBlock.textContent='✅ Desbloquear'; btnBlock.className='primary'; }
+    else { btnBlock.textContent='🚫 Bloquear'; btnBlock.className='danger'; }
+  }
+
+  // banner bloqueado
+  const bb=$('blockedBanner');
+  if(bb) bb.style.display = isBlocked ? 'block' : 'none';
+
+  // mensagens — renderização incremental (só adiciona novas, sem apagar DOM existente)
+  const msgsEl=$('messages');
+  const msgs = conv.messages || [];
+  const existingBubbles = msgsEl.querySelectorAll('.bubble').length;
+  const isFullRedraw = existingBubbles === 0 || msgsEl.dataset.waId !== conv.waId;
+
+  if (isFullRedraw) {
+    msgsEl.innerHTML = '';
+    msgsEl.dataset.waId = conv.waId;
+  }
+
+  // Só renderiza mensagens que ainda não estão no DOM
+  const startIdx = isFullRedraw ? 0 : existingBubbles;
+  // Recalcula o separador de data da última mensagem já renderizada
+  let lastDateStr = isFullRedraw ? '' : (msgsEl.dataset.lastDate || '');
+
+  for (let i = startIdx; i < msgs.length; i++) {
+    const m = msgs[i];
+    const dateStr = fmtDate(m.ts);
+    if(dateStr && dateStr !== lastDateStr){
+      lastDateStr = dateStr;
+      msgsEl.dataset.lastDate = dateStr;
+      const dd = document.createElement('div');
+      dd.className = 'date-divider'; dd.textContent = dateStr;
+      msgsEl.appendChild(dd);
+    }
+    const b = document.createElement('div');
+    const cls = (m.from==='user')?'in':(m.from==='human'?'human':'out');
+    b.className = 'bubble '+cls;
+    const labelMap = {user:'Usuário',human:'Atendente',bot:'Bot',system:'Sistema'};
+    const label = labelMap[m.from]||m.from;
+    const safeText = (m.text||'').split('&').join('&amp;').split('<').join('&lt;').split('>').join('&gt;').split(String.fromCharCode(10)).join('<br>').split(String.fromCharCode(13)).join('');
+
+    // Renderização de mídia
+    let mediaHTML = '';
+    if (m.mediaId && m.mediaType) {
+      const dlUrl = '/admin/api/media/' + encodeURIComponent(m.mediaId) + '?name=' + encodeURIComponent(m.mediaName || 'arquivo');
+      if (m.mediaType === 'image') {
+        mediaHTML = '<div class="media-wrap">'
+          + '<img class="media-img" src="'+dlUrl+'" alt="imagem" loading="lazy" onclick="window.open(this.src)">'
+          + '<a class="media-dl" href="'+dlUrl+'" download="'+(m.mediaName||'imagem.jpg')+'">⬇ Baixar imagem</a>'
+          + '</div>';
+      } else if (m.mediaType === 'video') {
+        mediaHTML = '<div class="media-wrap">'
+          + '<video class="media-video" controls preload="metadata"><source src="'+dlUrl+'"></video>'
+          + '<a class="media-dl" href="'+dlUrl+'" download="'+(m.mediaName||'video.mp4')+'">⬇ Baixar vídeo</a>'
+          + '</div>';
+      } else if (m.mediaType === 'audio') {
+        mediaHTML = '<div class="media-wrap">'
+          + '<audio class="media-audio" controls><source src="'+dlUrl+'"></audio>'
+          + '<a class="media-dl" href="'+dlUrl+'" download="'+(m.mediaName||'audio.ogg')+'">⬇ Baixar áudio</a>'
+          + '</div>';
+      } else if (m.mediaType === 'sticker') {
+        mediaHTML = '<div class="media-wrap">'
+          + '<img class="media-sticker" src="'+dlUrl+'" alt="sticker" loading="lazy">'
+          + '</div>';
+      } else {
+        const icon = {'application/pdf':'📄','application/msword':'📝','application/vnd.openxmlformats-officedocument.wordprocessingml.document':'📝','application/vnd.ms-excel':'📊','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':'📊','application/zip':'🗜️'}[m.mediaMime] || '📎';
+        mediaHTML = '<div class="media-wrap media-doc">'
+          + '<span class="media-doc-icon">'+icon+'</span>'
+          + '<span class="media-doc-name">'+(m.mediaName||'documento')+'</span>'
+          + '<a class="media-dl" href="'+dlUrl+'" download="'+(m.mediaName||'documento')+'">⬇ Baixar</a>'
+          + '</div>';
+      }
+    }
+
+    const emptyMsg = (!mediaHTML && !safeText) ? '<span style="opacity:.45;font-style:italic;font-size:12px;">📎 Mídia não disponível</span>' : '';
+    b.innerHTML = '<div class="bubble-label">'+label+'</div>'+mediaHTML+(safeText ? '<div class="bubble-text">'+safeText+'</div>' : '')+emptyMsg+'<span class="ts">'+fmtTS(m.ts)+'</span>';
+    msgsEl.appendChild(b);
+  }
+
+  // Scroll só se estiver perto do final ou for carregamento inicial
+  const el = msgsEl;
+  const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 200;
+  if(nearBottom || msgs.length < 10) el.scrollTop = el.scrollHeight;
+  markRead(conv.waId, true).catch(()=>{});
+}
+
+// Set local de bloqueados para renderização imediata (nome diferente do backend)
+const _panelBlockedSet = new Set();
+function syncBlocked(){
+  _panelBlockedSet.clear();
+  for(const c of allConvos){ if(c.blocked) _panelBlockedSet.add(c.waId); }
+}
+
+async function openConversation(waId){
+  const mySeq = ++openSeq;
+  activeId=waId;
+  _lastConvFingerprint = ''; // reseta fingerprint ao trocar de conversa
+  _lastActiveTs = '';
+  const cached = convCache.get(waId);
+  if(cached){
+    if(mySeq!==openSeq) return;
+    renderConversation(cached); renderList();
+  } else {
+    $('messages').innerHTML='<div class="empty">Carregando…</div>';
+    $('contactName').textContent='Carregando…'; $('contactSub').textContent='';
+    $('actions').style.display='none'; $('composer').style.display='none';
+  }
+  const conv=await fetchConversation(waId);
+  if(mySeq!==openSeq) return;
+  _lastConvFingerprint = _convFingerprint(conv);
+  renderConversation(conv); renderList();
+}
+
+async function sendMessage(){
+  const t=$('text').value.trim();
+  const fileInput=$('fileInput');
+  const hasFile = fileInput && fileInput.files && fileInput.files.length > 0;
+  if(!activeId) return;
+  if(hasFile){
+    const file = fileInput.files[0];
+    const fd = new FormData();
+    fd.append('file', file);
+    if(t) fd.append('caption', t);
+    $('text').value=''; clearAttach();
+    await fetch('/admin/api/conversation/'+encodeURIComponent(activeId)+'/media', {method:'POST', body:fd});
+    return;
+  }
+  if(!t) return;
+  $('text').value='';
+  await fetch('/admin/api/conversation/'+encodeURIComponent(activeId)+'/message', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:t})});
+}
+
+function clearAttach(){
+  const fi=$('fileInput'); if(fi) fi.value='';
+  const ap=$('attachPreview'); if(ap) ap.style.display='none';
+  $('attachName').textContent='';
+}
+
+// Botão de anexo
+const _btnAttach=$('btnAttach');
+if(_btnAttach){ _btnAttach.addEventListener('click',()=>{ const fi=$('fileInput'); if(fi) fi.click(); }); }
+const _fileInput=$('fileInput');
+if(_fileInput){ _fileInput.addEventListener('change',()=>{
+  const f=_fileInput.files&&_fileInput.files[0];
+  if(!f){ clearAttach(); return; }
+  $('attachName').textContent=f.name; $('attachPreview').style.display='flex';
+}); }
+
+// Modal de iniciar conversa
+
+
+async function assume(){ if(!activeId) return; await fetch('/admin/api/conversation/'+encodeURIComponent(activeId)+'/assume',{method:'POST'}); }
+async function end(){ if(!activeId) return; await fetch('/admin/api/conversation/'+encodeURIComponent(activeId)+'/end',{method:'POST'}); }
+async function markRead(waId,silent){ if(!waId) return; await fetch('/admin/api/conversation/'+encodeURIComponent(waId)+'/mark-read',{method:'POST'}); if(!silent) await fetchConversations(); }
+
+async function toggleBlock(){
+  if(!activeId) return;
+  const isBlocked = _panelBlockedSet.has(activeId) || (activeData?.blocked);
+  const route = isBlocked ? 'unblock' : 'block';
+  await fetch('/admin/api/conversation/'+encodeURIComponent(activeId)+'/'+route, {method:'POST'});
+  // Atualiza localmente o set de bloqueados
+  if(isBlocked) _panelBlockedSet.delete(activeId); else _panelBlockedSet.add(activeId);
+  // Força re-fetch ignorando fingerprint
+  _lastListFingerprint = '';
+  _lastActiveTs = '';
+  await fetchConversations(true).catch(()=>{});
+  syncBlocked();
+  const conv = await fetchConversation(activeId);
+  renderConversation(conv);
+  renderList();
+}
+
+$('btnSend').onclick=sendMessage;
+$('btnAssume').onclick=assume;
+$('btnEnd').onclick=end;
+$('btnBlock').onclick=toggleBlock;
+$('btnEditContact').onclick=()=>{
+  if(!activeId) return;
+  const c=getContactById(activeId);
+  if(c){ openEditContact(c); }
+  else {
+    const wa=$('cmWaId'); if(wa){ wa.disabled=true; wa.style.opacity='.9'; }
+    showContactModal({isNew:false, waId:activeId, name:(activeData?.name||''), phone:''});
+  }
+};
+$('btnNewContact').onclick=()=>{ openNewContact(); };
+$('btnStartConv').onclick=()=>{ window.openStartModal && window.openStartModal(); };
+
+// ── Modal de Iniciar Conversa ──────────────────────────────────────────────
+(function(){
+  function openStartModal(){
+    if (!activeId) return;
+    $('smWaId').value = activeId;
+    $('smTemplate').value = 'avisos_rh';
+    $('smLang').value = 'pt_BR';
+    $('smError').textContent = '';
+    // Mostra nome do contato no modal
+    const name = (activeData && activeData.name) ? activeData.name : activeId;
+    $('smContactName').textContent = '📨 Enviar template para: ' + name;
+    $('startModal').style.display = 'flex';
+  }
+  function closeStartModal(){
+    $('startModal').style.display = 'none';
+  }
+
+  $('smClose').onclick = closeStartModal;
+
+  // Fecha ao clicar no backdrop
+  $('startModal').addEventListener('click', function(e){
+    if(e.target === this) closeStartModal();
+  });
+
+  $('smSend').onclick = async () => {
+    const waId     = ($('smWaId').value     || '').trim();
+    const template = ($('smTemplate').value || '').trim() || 'avisos_rh';
+    const lang     = ($('smLang').value     || '').trim() || 'pt_BR';
+    if (!waId) { $('smError').textContent = 'Informe o numero (WaId).'; return; }
+    $('smError').textContent = '';
+    $('smSend').disabled = true;
+    try {
+      const r = await fetch(
+        '/admin/api/conversation/' + encodeURIComponent(waId) + '/start',
+        { method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ templateName: template, languageCode: lang }) }
+      );
+      const data = await r.json().catch(()=>({}));
+      if (!r.ok) {
+        const detail = (data && data.detail && data.detail.error && data.detail.error.message) || (data && data.detail) || (data && data.error) || ('HTTP ' + r.status);
+        $('smError').textContent = 'Erro: ' + detail;
+      } else {
+        closeStartModal();
+        await fetchConversations(true).catch(()=>{});
+      }
+    } catch(e) {
+      $('smError').textContent = 'Erro de rede: ' + (e.message || e);
+    } finally {
+      $('smSend').disabled = false;
+    }
+  };
+
+  window.openStartModal = openStartModal;
+})();
+// ──────────────────────────────────────────────────────────────────────────
+
+const _textEl=$('text');
+if(_textEl) _textEl.addEventListener('keydown',(e)=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); sendMessage(); }});
+const _qEl=$('q');
+if(_qEl){
+  _qEl.addEventListener('input', ()=>{
+    _lastListFingerprint = ''; // força re-render no próximo poll também
+    renderList();
+  });
+  // Limpar filtro com ESC
+  _qEl.addEventListener('keydown', (e)=>{
+    if(e.key==='Escape'){ _qEl.value=''; _lastListFingerprint=''; renderList(); }
+  });
+}
+const _tabs=$('tabs');
+if(_tabs){
+  window.__currentTab = window.__currentTab || 'queue';
+  _tabs.querySelectorAll('.tab').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      _tabs.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      window.__currentTab = btn.dataset.tab;
+      renderList();
+    });
+  });
+}
+
+// Polling a cada 3s — mais confiável que SSE em proxies como Koyeb
+// Fingerprint da conversa ativa — evita re-render desnecessário (que causa piscar de imagens)
+let _lastConvFingerprint = '';
+let _lastListFingerprint = '';
+let _lastContactsFingerprint = '';
+
+function _convFingerprint(conv) {
+  if (!conv) return '';
+  const msgs = conv.messages || [];
+  return msgs.length + '|' + (msgs[msgs.length-1]?.ts || '');
+}
+function _listFingerprint() {
+  // Inclui blocked para detectar bloqueios/desbloqueios
+  return allConvos.map(c => c.waId + '|' + (c.lastMessageAt || '') + '|' + (c.blocked ? '1' : '0')).join(',');
+}
+function _contactsFingerprint() {
+  return allContacts.map(c => c.waId + c.name).join(',');
+}
+
+async function _poll() {
+  try {
+    await fetchConversations();
+    syncBlocked();
+    // Conversa aberta: só re-renderiza se chegou mensagem nova
+    if (activeId) {
+      const updated = allConvos.find(c => c.waId === activeId);
+      const newTs = updated?.lastMessageAt || '';
+      if (newTs && newTs !== _lastActiveTs) {
+        _lastActiveTs = newTs;
+        const conv = await fetchConversation(activeId);
+        renderConversation(conv);
+      }
+    }
+  } catch(e) {}
+  setTimeout(_poll, 5000);
+}
+let _lastActiveTs = '';
+
+// SSE como complemento — usa o mesmo fingerprint para evitar re-renders desnecessários
+try {
+  const es = new EventSource('/admin/events');
+  es.onopen = () => {
+    $('conn').textContent = '● Online';
+    $('conn').style.color = '#00a884';
+    fetchConversations().then(() => syncBlocked()).catch(() => {});
+  };
+  es.onerror = () => {};
+  es.addEventListener('conversations', () => {
+    fetchConversations().then(() => syncBlocked()).catch(() => {});
+  });
+  es.addEventListener('contacts', () => {
+    fetchContacts().catch(() => {});
+  });
+  es.addEventListener('conversation', async (ev) => {
+    try {
+      const p = JSON.parse(ev.data || '{}');
+      if (!p.waId) return;
+      // Atualiza a lista
+      await fetchConversations().catch(() => {});
+      syncBlocked();
+      // Se for a conversa aberta, verifica fingerprint antes de re-renderizar
+      if (activeId && p.waId === activeId) {
+        const updated = allConvos.find(c => c.waId === activeId);
+        const newTs = updated?.lastMessageAt || '';
+        if (newTs && newTs !== _lastActiveTs) {
+          _lastActiveTs = newTs;
+          const conv = await fetchConversation(activeId);
+          renderConversation(conv);
+        }
+      }
+    } catch(e) {}
+  });
+} catch(e) {}
+
+// Carrega imediatamente ao abrir (marca Online antes mesmo do SSE)
+$('conn').textContent = '● Online';
+$('conn').style.color = '#00a884';
+async function initialLoad(){
+  await fetchConversations(true).catch(()=>{});
+  syncBlocked();
+  if(allConvos.length === 0){
+    const delays = [1500, 2000, 2500, 3000, 4000];
+    for(const delay of delays){
+      await new Promise(r => setTimeout(r, delay));
+      await fetchConversations(true).catch(()=>{});
+      syncBlocked();
+      if(allConvos.length > 0) break;
+    }
+  }
+}
+initialLoad();
+setTimeout(_poll, 5000);
+
+</script>
+</body></html>
