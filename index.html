@@ -229,7 +229,7 @@ button.warn:hover{background:rgba(240,165,0,.22);}
 .phone-composer{padding:10px;background:#1f2c34;display:flex;gap:8px;align-items:center;}
 .phone-input{flex:1;border:none;border-radius:20px;background:#2a3942;color:var(--text);padding:10px 14px;font-size:13px;outline:none;}
 .phone-input::placeholder{color:var(--muted);}
-.phone-send{width:38px;height:38px;border-radius:50%;border:none;background:#00a884;color:white;display:grid;place-items:center;padding:0;}
+.phone-send{min-width:64px;height:38px;border-radius:20px;border:none;background:#00a884;color:white;display:grid;place-items:center;padding:0 12px;font-size:12px;font-weight:700;}
 </style>
 </head>
 <body>
@@ -323,7 +323,7 @@ button.warn:hover{background:rgba(240,165,0,.22);}
   </div>
   <div class="phone-composer">
     <input class="phone-input" id="phoneInput" placeholder="Digite como colaborador..."/>
-    <button class="phone-send" id="phoneSend">?</button>
+    <button class="phone-send" id="phoneSend" type="button">Enviar</button>
   </div>
 </section>
 
@@ -400,10 +400,10 @@ const DEMO_DB = { contacts: [
 ], conversations: [] };
 DEMO_DB.conversations = [
   { waId:'5511999000001', name:'Colaborador 001', displayPhone:'+55 11 99000-0001', state:'handover', inQueue:true, queuePos:1, unread:3, topic:{key:'ponto', label:'Ponto'}, lastMessageAt:iso(8), lastUserMessageAt:iso(8), blocked:false, messages:[{ts:iso(42), from:'bot', text:'Ol?, eu sou o assistente virtual do RH. Como posso ajudar?'},{ts:iso(39), from:'user', text:'Preciso ajustar uma marca??o de ponto.'},{ts:iso(38), from:'bot', text:'Encaminhando para um atendente humano. Aguarde um momento.'},{ts:iso(8), from:'user', text:'Enviei o comprovante pelo aplicativo.'}] },
-  { waId:'5511999000002', name:'Colaborador 002', displayPhone:'+55 11 99000-0002', state:'manual', inQueue:false, queuePos:0, unread:0, topic:{key:'beneficios', label:'Benef?cios'}, lastMessageAt:iso(18), lastUserMessageAt:iso(31), blocked:false, messages:[{ts:iso(55), from:'user', text:'Bom dia! Tenho uma d?vida sobre vale transporte.'},{ts:iso(50), from:'bot', text:'Vou direcionar sua solicita??o para o RH.'},{ts:iso(28), from:'human', text:'Ol?! J? localizei seu cadastro e vou verificar os dados.'},{ts:iso(18), from:'human', text:'O ajuste ficar? dispon?vel na pr?xima atualiza??o.'}] },
-  { waId:'5511999000003', name:'Colaborador 003', displayPhone:'+55 11 99000-0003', state:'idle', inQueue:false, queuePos:0, unread:0, topic:{key:'holerite', label:'Holerite'}, lastMessageAt:iso(74), lastUserMessageAt:iso(76), blocked:false, messages:[{ts:iso(82), from:'bot', text:'Ol?! Escolha uma op??o para continuar.'},{ts:iso(76), from:'user', text:'Quero consultar meu holerite.'},{ts:iso(74), from:'bot', text:'Voc? pode acessar pelo portal do colaborador na ?rea de documentos.'}] },
-  { waId:'5511999000004', name:'Colaborador 004', displayPhone:'+55 11 99000-0004', state:'ended', inQueue:false, queuePos:0, unread:0, topic:{key:'ferias', label:'F?rias'}, lastMessageAt:iso(160), lastUserMessageAt:iso(190), blocked:false, messages:[{ts:iso(205), from:'user', text:'Gostaria de confirmar meu per?odo de f?rias.'},{ts:iso(180), from:'human', text:'Seu per?odo foi confirmado no sistema.'},{ts:iso(160), from:'human', text:'Atendimento encerrado. Obrigado pelo contato!'}] },
-  { waId:'5511999000005', name:'Colaborador 005', displayPhone:'+55 11 99000-0005', state:'ended', inQueue:false, queuePos:0, unread:0, topic:{key:'rescisao', label:'Documentos'}, lastMessageAt:iso(260), lastUserMessageAt:iso(280), blocked:true, messages:[{ts:iso(300), from:'user', text:'Preciso falar com o RH sobre documentos.'},{ts:iso(260), from:'system', text:'Contato bloqueado para demonstra??o do painel.'}] }
+  { waId:'5511999000002', name:'Colaborador 002', displayPhone:'+55 11 99000-0002', state:'manual', inQueue:false, queuePos:0, unread:0, topic:{key:'beneficios', label:'Benef\u00edcios'}, lastMessageAt:iso(18), lastUserMessageAt:iso(31), blocked:false, messages:[{ts:iso(55), from:'user', text:'Bom dia! Tenho uma d\u00favida sobre vale transporte.'},{ts:iso(50), from:'bot', text:'Vou direcionar sua solicita??o para o RH.'},{ts:iso(28), from:'human', text:'Ol\u00e1! J\u00e1 localizei seu cadastro e vou verificar os dados.'},{ts:iso(18), from:'human', text:'O ajuste ficar\u00e1 dispon\u00edvel na pr\u00f3xima atualiza\u00e7\u00e3o.'}] },
+  { waId:'5511999000003', name:'Colaborador 003', displayPhone:'+55 11 99000-0003', state:'idle', inQueue:false, queuePos:0, unread:0, topic:{key:'holerite', label:'Holerite'}, lastMessageAt:iso(74), lastUserMessageAt:iso(76), blocked:false, messages:[{ts:iso(82), from:'bot', text:'Ol\u00e1! Escolha uma op\u00e7\u00e3o para continuar.'},{ts:iso(76), from:'user', text:'Quero consultar meu holerite.'},{ts:iso(74), from:'bot', text:'Voc\u00ea pode acessar pelo portal do colaborador na \u00e1rea de documentos.'}] },
+  { waId:'5511999000004', name:'Colaborador 004', displayPhone:'+55 11 99000-0004', state:'ended', inQueue:false, queuePos:0, unread:0, topic:{key:'ferias', label:'F\u00e9rias'}, lastMessageAt:iso(160), lastUserMessageAt:iso(190), blocked:false, messages:[{ts:iso(205), from:'user', text:'Gostaria de confirmar meu per\u00edodo de f\u00e9rias.'},{ts:iso(180), from:'human', text:'Seu per\u00edodo foi confirmado no sistema.'},{ts:iso(160), from:'human', text:'Atendimento encerrado. Obrigado pelo contato!'}] },
+  { waId:'5511999000005', name:'Colaborador 005', displayPhone:'+55 11 99000-0005', state:'ended', inQueue:false, queuePos:0, unread:0, topic:{key:'rescisao', label:'Documentos'}, lastMessageAt:iso(260), lastUserMessageAt:iso(280), blocked:true, messages:[{ts:iso(300), from:'user', text:'Preciso falar com o RH sobre documentos.'},{ts:iso(260), from:'system', text:'Contato bloqueado para demonstra\u00e7\u00e3o do painel.'}] }
 ];
 function cloneDemo(obj){ return JSON.parse(JSON.stringify(obj)); }
 function demoConversationSummary(c){ return { waId:c.waId, name:c.name, displayPhone:c.displayPhone, state:c.state, topic:c.topic, inQueue:c.inQueue, queuePos:c.queuePos, unread:c.unread, lastMessageAt:c.lastMessageAt, lastUserMessageAt:c.lastUserMessageAt, blocked:c.blocked }; }
@@ -417,12 +417,12 @@ window.fetch = async function(url, opts={}){
   if (convMatch) { const id = decodeURIComponent(convMatch[1]); const action = convMatch[2] || ''; const conv = demoFind(id) || DEMO_DB.conversations[0];
     if (method === 'GET') return demoJson({ conversation: conv });
     if (action === 'mark-read') { conv.unread = 0; return demoJson({ ok:true }); }
-    if (action === 'assume') { conv.state = 'manual'; conv.inQueue = false; conv.queuePos = 0; conv.unread = 0; conv.messages.push({ts:new Date().toISOString(), from:'human', text:'Atendimento humano iniciado. Pode me explicar sua d?vida?'}); conv.lastMessageAt = conv.messages.at(-1).ts; return demoJson({ ok:true }); }
+    if (action === 'assume') { conv.state = 'manual'; conv.inQueue = false; conv.queuePos = 0; conv.unread = 0; conv.messages.push({ts:new Date().toISOString(), from:'human', text:'Atendimento humano iniciado. Pode me explicar sua d\u00favida?'}); conv.lastMessageAt = conv.messages.at(-1).ts; return demoJson({ ok:true }); }
     if (action === 'end') { conv.state = 'ended'; conv.inQueue = false; conv.messages.push({ts:new Date().toISOString(), from:'human', text:'Atendimento encerrado. Obrigado pelo contato!'}); conv.lastMessageAt = conv.messages.at(-1).ts; return demoJson({ ok:true }); }
     if (action === 'block') { conv.blocked = true; conv.state = 'ended'; return demoJson({ ok:true, blocked:true }); }
     if (action === 'unblock') { conv.blocked = false; return demoJson({ ok:true, blocked:false }); }
-    if (action === 'message') { const body = JSON.parse(opts.body || '{}'); conv.state = 'manual'; conv.inQueue = false; conv.messages.push({ts:new Date().toISOString(), from:'human', text:body.text || 'Mensagem de demonstra??o'}); conv.lastMessageAt = conv.messages.at(-1).ts; return demoJson({ ok:true }); }
-    if (action === 'media') { conv.messages.push({ts:new Date().toISOString(), from:'human', text:'[Anexo enviado no modo demonstra??o]'}); conv.lastMessageAt = conv.messages.at(-1).ts; return demoJson({ ok:true }); }
+    if (action === 'message') { const body = JSON.parse(opts.body || '{}'); conv.state = 'manual'; conv.inQueue = false; conv.messages.push({ts:new Date().toISOString(), from:'human', text:body.text || 'Mensagem de demonstra\u00e7\u00e3o'}); conv.lastMessageAt = conv.messages.at(-1).ts; return demoJson({ ok:true }); }
+    if (action === 'media') { conv.messages.push({ts:new Date().toISOString(), from:'human', text:'[Anexo enviado no modo demonstra\u00e7\u00e3o]'}); conv.lastMessageAt = conv.messages.at(-1).ts; return demoJson({ ok:true }); }
     if (action === 'start') { conv.messages.push({ts:new Date().toISOString(), from:'human', text:'[Template enviado: avisos_rh]'}); conv.lastMessageAt = conv.messages.at(-1).ts; return demoJson({ ok:true, template:'avisos_rh' }); }
   }
   if (u.includes('/admin/api/contacts/') && method === 'DELETE') return demoJson({ ok:true });
@@ -460,7 +460,7 @@ function phoneResetFlow(){
   const chat = $('phoneChat'); if(!chat) return;
   chat.innerHTML = '<div class="phone-note">Fluxo interativo visto pelo colaborador</div>';
   phoneFlow.step = 0; phoneFlow.name = 'Colaborador Demo'; phoneFlow.topic = {key:'ponto', label:'Ponto'}; phoneFlow.history = [];
-  phoneAdd('bot', 'Ol?, eu sou o assistente virtual do RH. Antes de come?armos, me diga seu nome completo.');
+  phoneAdd('bot', 'Ol\u00e1, eu sou o assistente virtual do RH. Antes de come\u00e7armos, me diga seu nome completo.');
 }
 function phoneSyncToPanel(){
   const id = '5511999000099';
@@ -482,31 +482,31 @@ function phoneHandleInput(raw){
     phoneFlow.name = value;
     phoneFlow.step = 1;
     setTimeout(()=>{
-      phoneAdd('bot', 'Obrigado, ' + phoneFlow.name + '. O que voc? deseja fazer hoje?\n\n1. Ponto\n2. Benef?cios\n3. Holerite\n4. Falar com RH');
-      phoneChoices([{label:'1 ? Ponto',value:'1'},{label:'2 ? Benef?cios',value:'2'},{label:'3 ? Holerite',value:'3'},{label:'4 ? Falar com RH',value:'4'}]);
+      phoneAdd('bot', 'Obrigado, ' + phoneFlow.name + '. O que voc\u00ea deseja fazer hoje?\n\n1. Ponto\n2. Benef\u00edcios\n3. Holerite\n4. Falar com RH');
+      phoneChoices([{label:'1 - Ponto',value:'1'},{label:'2 - Benef\u00edcios',value:'2'},{label:'3 - Holerite',value:'3'},{label:'4 - Falar com RH',value:'4'}]);
     }, 350);
     return;
   }
   if(phoneFlow.step === 1){
     const v = value.toLowerCase();
-    if(v.includes('2') || v.includes('benef')) phoneFlow.topic = {key:'beneficios', label:'Benef?cios'};
+    if(v.includes('2') || v.includes('benef')) phoneFlow.topic = {key:'beneficios', label:'Benef\u00edcios'};
     else if(v.includes('3') || v.includes('holerite')) phoneFlow.topic = {key:'holerite', label:'Holerite'};
     else if(v.includes('4') || v.includes('rh')) phoneFlow.topic = {key:'atendimento', label:'Atendimento RH'};
     else phoneFlow.topic = {key:'ponto', label:'Ponto'};
     phoneFlow.step = 2;
-    setTimeout(()=>phoneAdd('bot', 'Certo. Descreva sua solicita??o para que eu encaminhe ao RH com contexto.'), 350);
+    setTimeout(()=>phoneAdd('bot', 'Certo. Descreva sua solicita\u00e7\u00e3o para que eu encaminhe ao RH com contexto.'), 350);
     return;
   }
   if(phoneFlow.step === 2){
     phoneFlow.step = 3;
     setTimeout(()=>{
-      phoneAdd('bot', 'Vou encaminhar sua solicita??o para um atendente humano. Aguarde um momento.');
+      phoneAdd('bot', 'Vou encaminhar sua solicita\u00e7\u00e3o para um atendente humano. Aguarde um momento.');
       phoneNote('A conversa entrou na fila do painel RH');
       phoneSyncToPanel();
     }, 350);
     return;
   }
-  setTimeout(()=>phoneAdd('bot', 'Sua solicita??o j? est? na fila do RH. Acompanhe a resposta pelo atendimento humano.'), 250);
+  setTimeout(()=>phoneAdd('bot', 'Sua solicita\u00e7\u00e3o j\u00e1 est\u00e1 na fila do RH. Acompanhe a resposta pelo atendimento humano.'), 250);
 }
 function bindPhoneDemo(){
   const panel = $('phoneDemo');
