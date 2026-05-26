@@ -399,8 +399,8 @@ const DEMO_DB = { contacts: [
   { waId:'5511999000005', name:'Colaborador 005', phone:'+55 11 99000-0005', displayPhone:'+55 11 99000-0005' }
 ], conversations: [] };
 DEMO_DB.conversations = [
-  { waId:'5511999000001', name:'Colaborador 001', displayPhone:'+55 11 99000-0001', state:'handover', inQueue:true, queuePos:1, unread:3, topic:{key:'ponto', label:'Ponto'}, lastMessageAt:iso(8), lastUserMessageAt:iso(8), blocked:false, messages:[{ts:iso(42), from:'bot', text:'Ol?, eu sou o assistente virtual do RH. Como posso ajudar?'},{ts:iso(39), from:'user', text:'Preciso ajustar uma marca??o de ponto.'},{ts:iso(38), from:'bot', text:'Encaminhando para um atendente humano. Aguarde um momento.'},{ts:iso(8), from:'user', text:'Enviei o comprovante pelo aplicativo.'}] },
-  { waId:'5511999000002', name:'Colaborador 002', displayPhone:'+55 11 99000-0002', state:'manual', inQueue:false, queuePos:0, unread:0, topic:{key:'beneficios', label:'Benef\u00edcios'}, lastMessageAt:iso(18), lastUserMessageAt:iso(31), blocked:false, messages:[{ts:iso(55), from:'user', text:'Bom dia! Tenho uma d\u00favida sobre vale transporte.'},{ts:iso(50), from:'bot', text:'Vou direcionar sua solicita??o para o RH.'},{ts:iso(28), from:'human', text:'Ol\u00e1! J\u00e1 localizei seu cadastro e vou verificar os dados.'},{ts:iso(18), from:'human', text:'O ajuste ficar\u00e1 dispon\u00edvel na pr\u00f3xima atualiza\u00e7\u00e3o.'}] },
+  { waId:'5511999000001', name:'Colaborador 001', displayPhone:'+55 11 99000-0001', state:'handover', inQueue:true, queuePos:1, unread:3, topic:{key:'ponto', label:'Ponto'}, lastMessageAt:iso(8), lastUserMessageAt:iso(8), blocked:false, messages:[{ts:iso(42), from:'bot', text:'Ol\u00e1, eu sou o assistente virtual do RH. Como posso ajudar?'},{ts:iso(39), from:'user', text:'Preciso ajustar uma marca\u00e7\u00e3o de ponto.'},{ts:iso(38), from:'bot', text:'Encaminhando para um atendente humano. Aguarde um momento.'},{ts:iso(8), from:'user', text:'Enviei o comprovante pelo aplicativo.'}] },
+  { waId:'5511999000002', name:'Colaborador 002', displayPhone:'+55 11 99000-0002', state:'manual', inQueue:false, queuePos:0, unread:0, topic:{key:'beneficios', label:'Benef\u00edcios'}, lastMessageAt:iso(18), lastUserMessageAt:iso(31), blocked:false, messages:[{ts:iso(55), from:'user', text:'Bom dia! Tenho uma d\u00favida sobre vale transporte.'},{ts:iso(50), from:'bot', text:'Vou direcionar sua solicita\u00e7\u00e3o para o RH.'},{ts:iso(28), from:'human', text:'Ol\u00e1! J\u00e1 localizei seu cadastro e vou verificar os dados.'},{ts:iso(18), from:'human', text:'O ajuste ficar\u00e1 dispon\u00edvel na pr\u00f3xima atualiza\u00e7\u00e3o.'}] },
   { waId:'5511999000003', name:'Colaborador 003', displayPhone:'+55 11 99000-0003', state:'idle', inQueue:false, queuePos:0, unread:0, topic:{key:'holerite', label:'Holerite'}, lastMessageAt:iso(74), lastUserMessageAt:iso(76), blocked:false, messages:[{ts:iso(82), from:'bot', text:'Ol\u00e1! Escolha uma op\u00e7\u00e3o para continuar.'},{ts:iso(76), from:'user', text:'Quero consultar meu holerite.'},{ts:iso(74), from:'bot', text:'Voc\u00ea pode acessar pelo portal do colaborador na \u00e1rea de documentos.'}] },
   { waId:'5511999000004', name:'Colaborador 004', displayPhone:'+55 11 99000-0004', state:'ended', inQueue:false, queuePos:0, unread:0, topic:{key:'ferias', label:'F\u00e9rias'}, lastMessageAt:iso(160), lastUserMessageAt:iso(190), blocked:false, messages:[{ts:iso(205), from:'user', text:'Gostaria de confirmar meu per\u00edodo de f\u00e9rias.'},{ts:iso(180), from:'human', text:'Seu per\u00edodo foi confirmado no sistema.'},{ts:iso(160), from:'human', text:'Atendimento encerrado. Obrigado pelo contato!'}] },
   { waId:'5511999000005', name:'Colaborador 005', displayPhone:'+55 11 99000-0005', state:'ended', inQueue:false, queuePos:0, unread:0, topic:{key:'rescisao', label:'Documentos'}, lastMessageAt:iso(260), lastUserMessageAt:iso(280), blocked:true, messages:[{ts:iso(300), from:'user', text:'Preciso falar com o RH sobre documentos.'},{ts:iso(260), from:'system', text:'Contato bloqueado para demonstra\u00e7\u00e3o do painel.'}] }
@@ -434,37 +434,69 @@ window.EventSource = class { constructor(){ setTimeout(()=>{ this.onopen && this
 const $=(id)=>document.getElementById(id);
 let allConvos=[]; let allContacts=[]; let activeId=null; let activeData=null; let activeIsContact=false; let openSeq=0; const convCache=new Map();
 
-const phoneFlow = { step:0, name:'Colaborador Demo', topic:{key:'ponto', label:'Ponto'}, history:[] };
+const RH_ROOT_MENU = 'O que voc\u00ea deseja fazer hoje?\n\n1. Informa\u00e7\u00f5es sobre Ponto (Multi / My Ahgora)\n\n2. Folha & Benef\u00edcios (Meu RH)\n\n3. D\u00favidas sobre holerite\n\n4. Falar com atendente';
+const RH_PONTO_MENU = 'Por favor, escolha uma op\u00e7\u00e3o:\n\n1. Registrar ponto\n\n2. Consultar ponto\n\n3. Solicitar abonamento de horas\n\n4. Cancelar batida de ponto\n\n5. Incluir batida de ponto\n\n6. Enviar atestado\n\n7. Aprova\u00e7\u00e3o do espelho de ponto\n\n8. Falar com atendente\n\n9. Retornar ao menu inicial';
+const RH_FOLHA_MENU = 'Por favor, escolha uma op\u00e7\u00e3o:\n\n1. Acessar hist\u00f3rico de pagamentos\n\n2. Consultar hist\u00f3rico salarial\n\n3. Consultar informe de rendimentos\n\n4. Falar com atendente\n\n5. Retornar ao menu inicial';
+const RH_HUMAN_TOPIC_PROMPT = 'Antes de te encaminhar, escolha o assunto do atendimento:\n\n1. Benef\u00edcios\n\n2. Ponto\n\n3. Holerite\n\n4. F\u00e9rias\n\n5. Rescis\u00e3o\n\n6. Consignado';
+const RH_ASK_BACK = 'Deseja voltar ao Menu Inicial?\n\nSim\n\nN\u00e3o';
+const RH_ASK_HANDOVER = 'Como posso te ajudar agora?\n\n1. Retornar ao Menu inicial\n\n2. Aguardar o atendimento humano';
+const RH_STEPS = {
+  ponto1: '*Passo a passo para bater o ponto:*\n\n- No seu smartphone, abra o aplicativo Multi.\n- Na tela inicial, procure o bot\u00e3o *REGISTRAR PONTO*.\n- Coloque a senha do smartphone para realizar a batida.\n- Ap\u00f3s a confirma\u00e7\u00e3o, um comprovante de ponto poder\u00e1 ser fornecido.',
+  ponto2: '*Passo a passo para acessar o espelho de ponto:*\n\n- Fa\u00e7a login no aplicativo.\n- Toque em *Acessar espelho detalhado*.\n- Escolha o per\u00edodo desejado e toque em *Ok*.',
+  ponto3: '*Passo a passo para solicitar um abono:*\n\n- Abra o aplicativo My Ahgora.\n- Toque em *Solicitar abono*.\n- Preencha motivo, per\u00edodo e justificativa.\n- Anexe o documento e envie a solicita\u00e7\u00e3o.',
+  ponto4: '*Passo a passo para solicitar o cancelamento de uma batida de ponto*\n\n- O cancelamento da batida s\u00f3 pode ser realizado no mesmo dia da marca\u00e7\u00e3o.\n\n- Toque em *Cancelar Batida*.\n- Selecione o hor\u00e1rio e o motivo.\n- Adicione uma mensagem e envie a solicita\u00e7\u00e3o.',
+  ponto5: '*Passo a passo para solicitar a inclus\u00e3o de uma batida de ponto*\n\n- Toque em *Incluir Batida*.\n- Selecione data, hor\u00e1rio e motivo.\n- Adicione uma mensagem e envie a solicita\u00e7\u00e3o.',
+  ponto6: '*Passo a passo para enviar atestado:*\n\n- Acesse o app ou portal Meu RH.\n- Entre na aba *Atestado*.\n- Preencha as informa\u00e7\u00f5es, anexe o documento e confirme o envio.',
+  ponto7: '*Passo a passo para aprova\u00e7\u00e3o do espelho de ponto:*\n\n- Acesse o espelho detalhado.\n- Troque a compet\u00eancia, baixe o espelho e confira.\n- Ap\u00f3s conferir, clique em *Aprovar*.',
+  folha1: '*Passo a passo para acessar hist\u00f3rico de pagamentos:*\n\n- Abra o aplicativo Meu RH e fa\u00e7a login.\n- Acesse *Pagamentos*.\n- Selecione *Envelope de Pagamento* e escolha o per\u00edodo desejado.',
+  folha2: '*Passo a passo para consultar o hist\u00f3rico salarial:*\n\n- Abra o app ou portal Meu RH.\n- Acesse *Pagamentos* e depois *Hist\u00f3rico Salarial*.\n- Use filtros se precisar consultar um per\u00edodo espec\u00edfico.',
+  folha3: '*Passo a passo para consultar informe de rendimentos*\n\n- Abra o app ou portal Meu RH.\n- Acesse *Pagamentos*.\n- Entre em *Informe de Rendimentos* para consultar ou baixar o documento.'
+};
+const phoneFlow = { stage:'start', name:'Colaborador Demo', topic:{key:'ponto', label:'Ponto'}, history:[] };
 function phoneNow(){ return new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}); }
+function phoneEscape(text){ return String(text).replace(/[&<>]/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[s])).replace(/\n/g,'<br>'); }
 function phoneAdd(kind, text){
   const chat = $('phoneChat'); if(!chat) return;
   const msg = document.createElement('div');
   msg.className = 'phone-msg ' + (kind === 'user' ? 'user' : 'bot');
-  msg.innerHTML = String(text).replace(/[&<>]/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[s])).replace(/\n/g,'<br>') + '<span class="time">' + phoneNow() + '</span>';
+  msg.innerHTML = phoneEscape(text) + '<span class="time">' + phoneNow() + '</span>';
   chat.appendChild(msg);
   chat.scrollTop = chat.scrollHeight;
   phoneFlow.history.push({ ts:new Date().toISOString(), from:kind === 'user' ? 'user' : 'bot', text:String(text) });
 }
-function phoneNote(text){
-  const chat = $('phoneChat'); if(!chat) return;
-  const note = document.createElement('div'); note.className='phone-note'; note.textContent=text;
-  chat.appendChild(note); chat.scrollTop = chat.scrollHeight;
-}
+function phoneNote(text){ const chat = $('phoneChat'); if(!chat) return; const note = document.createElement('div'); note.className='phone-note'; note.textContent=text; chat.appendChild(note); chat.scrollTop = chat.scrollHeight; }
 function phoneChoices(items){
   const chat = $('phoneChat'); if(!chat) return;
   const wrap = document.createElement('div'); wrap.className='phone-choices';
-  items.forEach(item => { const b=document.createElement('button'); b.className='phone-choice'; b.textContent=item.label; b.dataset.value=item.value; wrap.appendChild(b); });
+  items.forEach(item => { const b=document.createElement('button'); b.className='phone-choice'; b.type='button'; b.textContent=item.label; b.dataset.value=item.value; wrap.appendChild(b); });
   chat.appendChild(wrap); chat.scrollTop = chat.scrollHeight;
+}
+function phoneMenuChoices(type){
+  if(type === 'root') return phoneChoices([{label:'1 - Ponto',value:'1'},{label:'2 - Folha & Benef\u00edcios',value:'2'},{label:'3 - Holerite',value:'3'},{label:'4 - Falar com atendente',value:'4'}]);
+  if(type === 'ponto') return phoneChoices([{label:'1 - Registrar ponto',value:'1'},{label:'2 - Consultar ponto',value:'2'},{label:'3 - Solicitar abono',value:'3'},{label:'4 - Cancelar batida',value:'4'},{label:'5 - Incluir batida',value:'5'},{label:'6 - Enviar atestado',value:'6'},{label:'7 - Aprovar espelho',value:'7'},{label:'8 - Falar com atendente',value:'8'},{label:'9 - Menu inicial',value:'9'}]);
+  if(type === 'folha') return phoneChoices([{label:'1 - Hist\u00f3rico pagamentos',value:'1'},{label:'2 - Hist\u00f3rico salarial',value:'2'},{label:'3 - Informe rendimentos',value:'3'},{label:'4 - Falar com atendente',value:'4'},{label:'5 - Menu inicial',value:'5'}]);
+  if(type === 'back') return phoneChoices([{label:'Sim',value:'sim'},{label:'N\u00e3o',value:'n\u00e3o'}]);
+  if(type === 'topic') return phoneChoices([{label:'1 - Benef\u00edcios',value:'1'},{label:'2 - Ponto',value:'2'},{label:'3 - Holerite',value:'3'},{label:'4 - F\u00e9rias',value:'4'},{label:'5 - Rescis\u00e3o',value:'5'},{label:'6 - Consignado',value:'6'}]);
 }
 function phoneResetFlow(){
   const chat = $('phoneChat'); if(!chat) return;
-  chat.innerHTML = '<div class="phone-note">Fluxo interativo visto pelo colaborador</div>';
-  phoneFlow.step = 0; phoneFlow.name = 'Colaborador Demo'; phoneFlow.topic = {key:'ponto', label:'Ponto'}; phoneFlow.history = [];
-  phoneAdd('bot', 'Ol\u00e1, eu sou o assistente virtual do RH. Antes de come\u00e7armos, me diga seu nome completo.');
+  chat.innerHTML = '<div class="phone-note">Fluxo real do bot visto pelo colaborador</div>';
+  phoneFlow.stage = 'await_user_name'; phoneFlow.name = 'Colaborador Demo'; phoneFlow.topic = {key:'ponto', label:'Ponto'}; phoneFlow.history = [];
+  phoneAdd('bot', 'Ol\u00e1, eu sou o assistente virtual do RH.');
+  setTimeout(()=>phoneAdd('bot', 'Antes de come\u00e7armos, me diga seu *nome completo* (nome e sobrenome).'), 250);
+}
+function phoneParseTopic(value){
+  const v = String(value || '').toLowerCase();
+  if(v === '1' || v.includes('benef')) return {key:'beneficios', label:'Benef\u00edcios'};
+  if(v === '2' || v.includes('ponto')) return {key:'ponto', label:'Ponto'};
+  if(v === '3' || v.includes('holerite')) return {key:'holerite', label:'Holerite'};
+  if(v === '4' || v.includes('feri')) return {key:'ferias', label:'F\u00e9rias'};
+  if(v === '5' || v.includes('rescis')) return {key:'rescisao', label:'Rescis\u00e3o'};
+  if(v === '6' || v.includes('consign')) return {key:'consignado', label:'Consignado'};
+  return null;
 }
 function phoneSyncToPanel(){
-  const id = '5511999000099';
-  const nowIso = new Date().toISOString();
+  const id = '5511999000099'; const nowIso = new Date().toISOString();
   const contact = { waId:id, name:phoneFlow.name || 'Colaborador Demo', phone:'+55 11 99000-0099', displayPhone:'+55 11 99000-0099' };
   if(!DEMO_DB.contacts.some(c => c.waId === id)) DEMO_DB.contacts.unshift(contact);
   DEMO_DB.conversations.forEach(c => { if(c.inQueue) c.queuePos = Number(c.queuePos || 0) + 1; });
@@ -475,46 +507,72 @@ function phoneSyncToPanel(){
   convCache.delete(id);
   fetchConversations(true).then(()=>openConversation(id)).catch(()=>{});
 }
+function phoneToHuman(topic){
+  phoneFlow.topic = topic || phoneFlow.topic || {key:'atendimento', label:'Atendimento RH'};
+  phoneFlow.stage = 'handover';
+  phoneAdd('bot', 'Encaminhando para um atendente humano. Nosso time responder\u00e1 em at\u00e9 24 horas.');
+  phoneNote('A conversa entrou na fila do painel RH');
+  phoneSyncToPanel();
+}
+function phoneAfterTutorial(text){
+  phoneAdd('bot', text);
+  setTimeout(()=>{ phoneAdd('bot', RH_ASK_BACK); phoneMenuChoices('back'); phoneFlow.stage = 'await_back_menu'; }, 400);
+}
 function phoneHandleInput(raw){
   const value = String(raw || '').trim(); if(!value) return;
   phoneAdd('user', value);
-  if(phoneFlow.step === 0){
-    phoneFlow.name = value;
-    phoneFlow.step = 1;
-    setTimeout(()=>{
-      phoneAdd('bot', 'Obrigado, ' + phoneFlow.name + '. O que voc\u00ea deseja fazer hoje?\n\n1. Ponto\n2. Benef\u00edcios\n3. Holerite\n4. Falar com RH');
-      phoneChoices([{label:'1 - Ponto',value:'1'},{label:'2 - Benef\u00edcios',value:'2'},{label:'3 - Holerite',value:'3'},{label:'4 - Falar com RH',value:'4'}]);
-    }, 350);
-    return;
+  const v = value.toLowerCase();
+  if(phoneFlow.stage === 'await_user_name'){
+    if(value.split(/\s+/).length < 2){ setTimeout(()=>phoneAdd('bot', 'Por favor, envie seu *nome completo* (nome e sobrenome).'), 250); return; }
+    phoneFlow.name = value; phoneFlow.stage = 'await_main_choice';
+    setTimeout(()=>{ phoneAdd('bot', RH_ROOT_MENU); phoneMenuChoices('root'); }, 300); return;
   }
-  if(phoneFlow.step === 1){
-    const v = value.toLowerCase();
-    if(v.includes('2') || v.includes('benef')) phoneFlow.topic = {key:'beneficios', label:'Benef\u00edcios'};
-    else if(v.includes('3') || v.includes('holerite')) phoneFlow.topic = {key:'holerite', label:'Holerite'};
-    else if(v.includes('4') || v.includes('rh')) phoneFlow.topic = {key:'atendimento', label:'Atendimento RH'};
-    else phoneFlow.topic = {key:'ponto', label:'Ponto'};
-    phoneFlow.step = 2;
-    setTimeout(()=>phoneAdd('bot', 'Certo. Descreva sua solicita\u00e7\u00e3o para que eu encaminhe ao RH com contexto.'), 350);
-    return;
+  if(phoneFlow.stage === 'await_main_choice'){
+    if(value === '1'){ phoneFlow.stage='await_ponto_choice'; setTimeout(()=>{ phoneAdd('bot', RH_PONTO_MENU); phoneMenuChoices('ponto'); }, 300); return; }
+    if(value === '2'){ phoneFlow.stage='await_folha_choice'; setTimeout(()=>{ phoneAdd('bot', RH_FOLHA_MENU); phoneMenuChoices('folha'); }, 300); return; }
+    if(value === '3'){ phoneFlow.topic={key:'holerite', label:'Holerite'}; phoneFlow.stage='await_holerite_text'; setTimeout(()=>phoneAdd('bot', 'Por favor, escreva a sua d\u00favida sobre o holerite (em texto).'), 300); return; }
+    if(value === '4'){ phoneFlow.stage='await_human_topic'; setTimeout(()=>{ phoneAdd('bot', RH_HUMAN_TOPIC_PROMPT); phoneMenuChoices('topic'); }, 300); return; }
+    setTimeout(()=>{ phoneAdd('bot', 'N\u00e3o consegui identificar sua resposta.'); phoneAdd('bot', RH_ROOT_MENU); phoneMenuChoices('root'); }, 300); return;
   }
-  if(phoneFlow.step === 2){
-    phoneFlow.step = 3;
-    setTimeout(()=>{
-      phoneAdd('bot', 'Vou encaminhar sua solicita\u00e7\u00e3o para um atendente humano. Aguarde um momento.');
-      phoneNote('A conversa entrou na fila do painel RH');
-      phoneSyncToPanel();
-    }, 350);
-    return;
+  if(phoneFlow.stage === 'await_ponto_choice'){
+    if(value === '9'){ phoneFlow.stage='await_main_choice'; setTimeout(()=>{ phoneAdd('bot', RH_ROOT_MENU); phoneMenuChoices('root'); }, 300); return; }
+    if(value === '8'){ phoneFlow.stage='await_human_topic'; setTimeout(()=>{ phoneAdd('bot', RH_HUMAN_TOPIC_PROMPT); phoneMenuChoices('topic'); }, 300); return; }
+    const map = { '1':RH_STEPS.ponto1, '2':RH_STEPS.ponto2, '3':RH_STEPS.ponto3, '4':RH_STEPS.ponto4, '5':RH_STEPS.ponto5, '6':RH_STEPS.ponto6, '7':RH_STEPS.ponto7 };
+    if(map[value]){ setTimeout(()=>phoneAfterTutorial(map[value]), 300); return; }
+    setTimeout(()=>{ phoneAdd('bot', 'N\u00e3o consegui identificar sua resposta.'); phoneAdd('bot', RH_PONTO_MENU); phoneMenuChoices('ponto'); }, 300); return;
   }
-  setTimeout(()=>phoneAdd('bot', 'Sua solicita\u00e7\u00e3o j\u00e1 est\u00e1 na fila do RH. Acompanhe a resposta pelo atendimento humano.'), 250);
+  if(phoneFlow.stage === 'await_folha_choice'){
+    if(value === '5'){ phoneFlow.stage='await_main_choice'; setTimeout(()=>{ phoneAdd('bot', RH_ROOT_MENU); phoneMenuChoices('root'); }, 300); return; }
+    if(value === '4'){ phoneFlow.stage='await_human_topic'; setTimeout(()=>{ phoneAdd('bot', RH_HUMAN_TOPIC_PROMPT); phoneMenuChoices('topic'); }, 300); return; }
+    const map = { '1':RH_STEPS.folha1, '2':RH_STEPS.folha2, '3':RH_STEPS.folha3 };
+    if(map[value]){ setTimeout(()=>phoneAfterTutorial(map[value]), 300); return; }
+    setTimeout(()=>{ phoneAdd('bot', 'N\u00e3o consegui identificar sua resposta.'); phoneAdd('bot', RH_FOLHA_MENU); phoneMenuChoices('folha'); }, 300); return;
+  }
+  if(phoneFlow.stage === 'await_holerite_text'){
+    phoneFlow.stage='await_holerite_image'; setTimeout(()=>phoneAdd('bot', 'Perfeito. Agora, por favor, envie um print (imagem) do seu holerite. Digite "print" para simular o envio.'), 300); return;
+  }
+  if(phoneFlow.stage === 'await_holerite_image'){
+    phoneFlow.stage='await_holerite_forward'; setTimeout(()=>{ phoneAdd('bot', 'Recebi sua mensagem e o print. Vou te direcionar ao atendimento humano.'); phoneToHuman({key:'holerite', label:'Holerite'}); }, 300); return;
+  }
+  if(phoneFlow.stage === 'await_human_topic'){
+    const parsed = phoneParseTopic(value);
+    if(!parsed){ setTimeout(()=>{ phoneAdd('bot', 'N\u00e3o consegui identificar o assunto.'); phoneAdd('bot', RH_HUMAN_TOPIC_PROMPT); phoneMenuChoices('topic'); }, 300); return; }
+    setTimeout(()=>phoneToHuman(parsed), 300); return;
+  }
+  if(phoneFlow.stage === 'await_back_menu'){
+    if(['sim','s'].includes(v)){ phoneFlow.stage='await_main_choice'; setTimeout(()=>{ phoneAdd('bot', RH_ROOT_MENU); phoneMenuChoices('root'); }, 300); return; }
+    if(['nao','n\u00e3o','n'].includes(v)){ phoneFlow.stage='ended'; setTimeout(()=>phoneAdd('bot', 'Atendimento encerrado. Obrigado por entrar em contato com o RH! Se precisar de mais informa\u00e7\u00f5es, \u00e9 s\u00f3 mandar uma nova mensagem.'), 300); return; }
+    setTimeout(()=>{ phoneAdd('bot', 'N\u00e3o consegui identificar. Responda com "sim" ou "n\u00e3o".'); phoneAdd('bot', RH_ASK_BACK); phoneMenuChoices('back'); }, 300); return;
+  }
+  if(phoneFlow.stage === 'handover'){ setTimeout(()=>{ phoneAdd('bot', RH_ASK_HANDOVER); phoneChoices([{label:'1 - Retornar ao menu',value:'1'},{label:'2 - Aguardar RH',value:'2'}]); phoneFlow.stage='await_handover_choice'; }, 250); return; }
+  if(phoneFlow.stage === 'await_handover_choice'){
+    if(value === '1'){ phoneFlow.stage='await_main_choice'; setTimeout(()=>{ phoneAdd('bot', RH_ROOT_MENU); phoneMenuChoices('root'); }, 300); return; }
+    setTimeout(()=>phoneToHuman(phoneFlow.topic), 300); return;
+  }
+  phoneResetFlow();
 }
 function bindPhoneDemo(){
-  const panel = $('phoneDemo');
-  const open = $('btnPhoneDemo');
-  const close = $('btnPhoneClose');
-  const input = $('phoneInput');
-  const send = $('phoneSend');
-  const chat = $('phoneChat');
+  const panel = $('phoneDemo'); const open = $('btnPhoneDemo'); const close = $('btnPhoneClose'); const input = $('phoneInput'); const send = $('phoneSend'); const chat = $('phoneChat');
   if(!panel || !open || !close || !input || !send || !chat) return;
   open.onclick = () => { panel.classList.toggle('open'); if(panel.classList.contains('open') && !phoneFlow.history.length) phoneResetFlow(); };
   close.onclick = () => panel.classList.remove('open');
