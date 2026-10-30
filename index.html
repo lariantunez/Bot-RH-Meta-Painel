@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bot RH Meta · Estudo de caso</title>
+  <meta name="description" content="Estudo de caso: bot de RH no WhatsApp Cloud API da Meta, com autoatendimento por menus, fila de atendimento humano e painel para o RH. Demonstração com conversas fictícias.">
+  <meta property="og:title" content="Bot RH Meta · autoatendimento de RH no WhatsApp, com fila humana">
+  <meta property="og:description" content="Menus e tutoriais no WhatsApp, fila de atendimento humano com assunto e um painel para o RH assumir, responder e encerrar conversas.">
+  <meta property="og:image" content="assets/fluxo-fila.jpg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/estudo.css">
+  <style>
+    /* Identidade do Bot RH Meta: verde do WhatsApp sobre grafite. */
+    :root { --accent: #00a884; --accent-2: #00a884; --on-accent: #03201a; --accent-wash: rgba(0, 168, 132, 0.12); }
+    :root[data-theme="light"] { --accent: #007a62; --accent-2: #007a62; --on-accent: #fff; --accent-wash: rgba(0, 122, 98, 0.09); }
+    @media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) { --accent: #007a62; --accent-2: #007a62; --on-accent: #fff; --accent-wash: rgba(0, 122, 98, 0.09); } }
+  </style>
+</head>
+<body>
+  <header class="topo">
+    <div class="wrap">
+      <a class="marca" href="#inicio"><i></i>Bot RH Meta</a>
+      <nav>
+        <a class="opcional" href="https://lariantunez.github.io/Vitrine-de-projetos/">Vitrine</a>
+        <a class="opcional" href="#c00">Estudo de caso</a>
+        <a class="opcional" href="https://github.com/lariantunez/Bot-RH-Meta-Painel">Código</a>
+        <a href="painel/">Abrir painel</a>
+        <button class="btn-tema" id="tema" type="button" aria-label="Trocar tema">☀</button>
+      </nav>
+      <span class="progresso"></span>
+    </div>
+  </header>
+
+  <main id="inicio">
+    <section class="abertura">
+      <div class="wrap">
+        <span class="selo-topo"><b>●</b> WhatsApp Cloud API · demonstração com conversas fictícias</span>
+        <h1>O RH no WhatsApp: o robô responde, <em>a equipe assume</em>.</h1>
+        <p class="lead">Um bot de atendimento de RH integrado à API oficial do WhatsApp da Meta. O colaborador resolve sozinho as dúvidas de ponto, folha e benefícios com tutoriais passo a passo; quando precisa de uma pessoa, escolhe o assunto e entra numa fila que o RH acompanha num painel parecido com o WhatsApp Web.</p>
+        <div class="acoes">
+          <a class="btn primario" href="painel/">Explorar o painel →</a>
+          <a class="btn" href="#c00">Ler o estudo de caso</a>
+        </div>
+        <div class="numeros">
+          <div><strong>4</strong><span>opções no menu inicial do bot</span></div>
+          <div><strong>10</strong><span>tutoriais passo a passo, cada um com vídeo</span></div>
+          <div><strong>6</strong><span>assuntos para etiquetar o atendimento humano</span></div>
+          <div><strong>14</strong><span>estados na máquina de conversa</span></div>
+          <div><strong>22</strong><span>rotas no servidor, 14 na API do painel</span></div>
+        </div>
+        <figure class="vitrine">
+          <div class="barra-janela"><i></i><i></i><i></i><span>painel/ · fila de atendimento + simulação do colaborador (dados fictícios)</span></div>
+          <img src="assets/fluxo-fila.jpg" alt="Painel do RH com a conversa recém-chegada na fila, etiquetada como Ponto, e ao lado a simulação do WhatsApp do colaborador escolhendo o assunto e sendo encaminhado ao atendimento humano" width="1440" height="900">
+        </figure>
+      </div>
+    </section>
+
+    <div class="wrap livro">
+      <aside class="indice" aria-label="Capítulos">
+        <p>Capítulos</p>
+        <ol>
+          <li><a href="#c00"><b>00</b>O desafio</a></li>
+          <li><a href="#c01"><b>01</b>Princípios</a></li>
+          <li><a href="#c02"><b>02</b>Fluxo da conversa</a></li>
+          <li><a href="#c03"><b>03</b>Estados e regras</a></li>
+          <li><a href="#c04"><b>04</b>WhatsApp Cloud API</a></li>
+          <li><a href="#c05"><b>05</b>Painel do RH</a></li>
+          <li><a href="#c06"><b>06</b>Dados e persistência</a></li>
+          <li><a href="#c07"><b>07</b>Segurança</a></li>
+          <li><a href="#c08"><b>08</b>Demonstração</a></li>
+        </ol>
+      </aside>
+
+      <div class="capitulos">
+        <!-- 00 -->
+        <section class="capitulo" id="c00">
+          <span class="rotulo-cap">00 · O desafio</span>
+          <h2>As mesmas perguntas, todos os dias, pelo WhatsApp.</h2>
+          <p>Como bato o ponto? Onde vejo o espelho? Como envio um atestado? Onde está o informe de rendimentos? Boa parte das dúvidas que chegam ao RH tem uma resposta conhecida, que mora num aplicativo de ponto (Multi / My Ahgora) ou no portal <strong>Meu RH</strong>. Outra parte precisa de alguém olhando o caso.</p>
+          <p class="destaque revelar">O bot resolve o que é passo a passo e entrega ao RH, já organizado, o que precisa de gente.</p>
+          <div class="grade g3 revelar">
+            <div class="cartao azul"><span class="num">AUTOATENDIMENTO</span><h4>Menus e tutoriais</h4><p>Ponto, folha e benefícios em menus numerados, com o passo a passo e um vídeo curto para cada tarefa.</p></div>
+            <div class="cartao ambar"><span class="num">FILA</span><h4>Atendimento humano</h4><p>O colaborador informa o nome, escolhe o assunto e entra numa fila ordenada; o RH recebe um e-mail a cada novo chamado.</p></div>
+            <div class="cartao verde"><span class="num">PAINEL</span><h4>Atendimento no navegador</h4><p>O RH vê a fila, assume a conversa, responde com texto ou anexo, encerra e bloqueia, tudo pelo mesmo número oficial.</p></div>
+          </div>
+        </section>
+
+        <!-- 01 -->
+        <section class="capitulo" id="c01">
+          <span class="rotulo-cap">01 · Princípios</span>
+          <h2>O robô conduz, mas nunca atropela a pessoa.</h2>
+          <p>Quatro regras aparecem em todo o código, do webhook ao painel:</p>
+          <div class="grade g2 revelar">
+            <div class="cartao"><span class="num">01</span><h4>Quando o RH assume, o bot fica em silêncio</h4><p>No estado <code>manual</code> o webhook só registra a mensagem e não responde. Enviar qualquer mensagem pelo painel já tira a conversa da fila e a coloca nesse estado.</p></div>
+            <div class="cartao"><span class="num">02</span><h4>Nenhuma conversa fica presa</h4><p>Resposta inválida devolve o menu; inatividade de 3 minutos encerra o atendimento automático; quem está na fila pode voltar ao menu a qualquer momento.</p></div>
+            <div class="cartao"><span class="num">03</span><h4>O painel sobrevive a um reinício</h4><p>Mensagens, contatos, assuntos e bloqueios ficam no MongoDB. Ao subir o servidor, o histórico é recarregado e o status de cada conversa é deduzido das mensagens.</p></div>
+            <div class="cartao"><span class="num">04</span><h4>Respeitar os limites da Meta</h4><p>Envios em fila por destinatário, com intervalo mínimo e nova tentativa, e um aviso fixo no painel: mensagens fora da janela de 24 horas podem ser cobradas.</p></div>
+          </div>
+        </section>
+
+        <!-- 02 -->
+        <section class="capitulo" id="c02">
+          <span class="rotulo-cap">02 · Fluxo da conversa</span>
+          <h2>Do “olá” ao tutorial ou à fila, em poucos toques.</h2>
+          <p>Toda conversa nova começa com a saudação e o pedido do <strong>nome completo</strong> (pelo menos duas palavras com letras). Quem já informou o nome antes vai direto ao menu. A partir daí, cada resposta numérica leva a um tutorial, a um submenu ou à fila humana.</p>
+          <div class="fluxo revelar" role="img" aria-label="Fluxo: saudação e nome, menu inicial com quatro opções, submenus de ponto, folha, holerite e assunto, e saídas: tutorial, fila humana ou encerramento">
+            <div class="coluna"><b>1 · Entrada</b>
+              <div class="item">Saudação<small>assistente virtual do RH</small></div>
+              <div class="item">Nome completo<small>nome e sobrenome, validado</small></div>
+            </div>
+            <div class="seta">→</div>
+            <div class="coluna"><b>2 · Menu inicial</b>
+              <div class="item erp">1 · Ponto<small>Multi / My Ahgora</small></div>
+              <div class="item erp">2 · Folha &amp; Benefícios<small>Meu RH</small></div>
+              <div class="item adv">3 · Dúvidas sobre holerite<small>texto + print</small></div>
+              <div class="item adv">4 · Falar com atendente<small>escolha do assunto</small></div>
+            </div>
+            <div class="seta">→</div>
+            <div class="coluna"><b>3 · Submenus</b>
+              <div class="item erp">Ponto<small>9 opções, 7 tutoriais</small></div>
+              <div class="item erp">Folha &amp; Benefícios<small>5 opções, 3 tutoriais</small></div>
+              <div class="item adv">Holerite<small>dúvida em texto e imagem</small></div>
+              <div class="item adv">Assunto<small>6 etiquetas</small></div>
+            </div>
+            <div class="seta">→</div>
+            <div class="coluna"><b>4 · Saída</b>
+              <div class="item dim">Tutorial + vídeo<small>e “Deseja voltar ao menu?”</small></div>
+              <div class="item fato">Fila humana<small>posição visível só no painel</small></div>
+              <div class="item">Encerramento<small>“não” ou 3 min sem resposta</small></div>
+            </div>
+          </div>
+          <div class="tabela-rolagem revelar">
+            <table class="tabela">
+              <thead><tr><th>Menu</th><th>Opções</th><th>O que acontece</th></tr></thead>
+              <tbody>
+                <tr><td>Menu inicial</td><td>Ponto · Folha &amp; Benefícios · Dúvidas sobre holerite · Falar com atendente</td><td>Abre o submenu, inicia a coleta do holerite ou pede o assunto do atendimento</td></tr>
+                <tr><td>Ponto</td><td>Registrar ponto · Consultar ponto · Solicitar abonamento de horas · Cancelar batida · Incluir batida · Enviar atestado · Aprovação do espelho · Falar com atendente · Retornar ao menu</td><td>As opções 1 a 7 enviam o tutorial e perguntam se a pessoa quer voltar ao menu inicial</td></tr>
+                <tr><td>Folha &amp; Benefícios</td><td>Histórico de pagamentos · Histórico salarial · Informe de rendimentos · Falar com atendente · Retornar ao menu</td><td>As opções 1 a 3 enviam o tutorial; 4 vai para o atendimento; 5 volta ao início</td></tr>
+                <tr><td>Assunto do atendimento</td><td>Benefícios · Ponto · Folha de pagamento · Férias · Rescisão · Consignado</td><td>Aceita o número ou o texto (“batida”, “demissão”, “salário”…) e etiqueta a conversa no painel</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="galeria revelar">
+            <figure><img src="assets/fluxo-ponto.jpg" alt="Simulação do WhatsApp do colaborador mostrando o submenu de Ponto com nove opções e botões de atalho" loading="lazy" width="1440" height="900"><figcaption>Submenu de Ponto na simulação do colaborador.</figcaption></figure>
+            <figure><img src="assets/fluxo-tutorial.jpg" alt="Simulação do WhatsApp com o passo a passo para solicitar abono e a pergunta Deseja voltar ao Menu Inicial com as opções Sim e Não" loading="lazy" width="1440" height="900"><figcaption>Tutorial enviado e a pergunta para voltar ao menu.</figcaption></figure>
+          </div>
+        </section>
+
+        <!-- 03 -->
+        <section class="capitulo" id="c03">
+          <span class="rotulo-cap">03 · Estados e regras</span>
+          <h2>Uma máquina de estados por número de WhatsApp.</h2>
+          <p>Cada conversa guarda em que ponto o colaborador está. São 14 estados, de <code>idle</code> a <code>ended</code>, e cada mensagem recebida é interpretada à luz do estado atual: o mesmo “1” significa Ponto no menu inicial e “Registrar ponto” no submenu.</p>
+          <div class="grade g3 revelar">
+            <div class="cartao azul"><h4>Bot no comando</h4><p><code>await_user_name</code>, <code>await_main_choice</code>, <code>await_ponto_choice</code>, <code>await_folha_choice</code>, <code>await_back_menu</code>.</p></div>
+            <div class="cartao ambar"><h4>Caminho até a fila</h4><p><code>await_holerite_text</code>, <code>await_holerite_image</code>, <code>await_holerite_forward</code>, <code>await_human_topic</code>, <code>handover</code>, <code>await_handover_choice</code>.</p></div>
+            <div class="cartao verde"><h4>Com o RH ou encerrada</h4><p><code>manual</code> (o bot não responde), <code>ended</code> e <code>idle</code> (a próxima mensagem recomeça com a saudação).</p></div>
+          </div>
+          <h3>A dúvida sobre holerite</h3>
+          <p>É o único caminho que coleta material antes de chegar ao RH. A conversa já recebe a etiqueta <strong>Holerite</strong> e só segue quando tem as duas peças:</p>
+          <div class="etapas revelar">
+            <div class="etapa"><div><h4>O colaborador escolhe a opção 3</h4><p>o assunto é gravado na hora, sem perguntar</p></div></div>
+            <div class="etapa"><div><h4>Escreve a dúvida em texto</h4><p>se mandar a imagem primeiro, o bot aceita e pede o texto</p></div></div>
+            <div class="etapa"><div><h4>Envia um print do holerite</h4><p>enquanto faltar a imagem, o bot volta a pedir</p></div></div>
+            <div class="etapa"><div><h4>Confirmação e encaminhamento</h4><p>após 3 segundos, a conversa entra na fila e o RH recebe o e-mail</p></div></div>
+          </div>
+          <h3>Regras que evitam becos sem saída</h3>
+          <div class="grade g2 revelar">
+            <div class="cartao"><h4>Resgate de contexto</h4><p>Se o estado se desalinhar mas o último menu enviado (há menos de 5 minutos) foi Ponto ou Folha, um número válido é redirecionado para o submenu certo.</p></div>
+            <div class="cartao"><h4>Quem escreve na fila</h4><p>Escolhe entre voltar ao menu inicial (e sair da fila) ou continuar aguardando, sem ocupar duas posições na fila.</p></div>
+            <div class="cartao"><h4>Inatividade</h4><p>Três minutos sem resposta encerram o atendimento automático com uma mensagem de agradecimento. O cronômetro não corre para quem está na fila ou com o RH.</p></div>
+            <div class="cartao"><h4>Contato bloqueado</h4><p>As mensagens de números bloqueados são ignoradas logo na entrada do webhook, antes de qualquer resposta.</p></div>
+          </div>
+        </section>
+
+        <!-- 04 -->
+        <section class="capitulo" id="c04">
+          <span class="rotulo-cap">04 · WhatsApp Cloud API</span>
+          <h2>Um webhook para ouvir, a Graph API para responder.</h2>
+          <p>O servidor conversa com a Meta pela <strong>WhatsApp Cloud API</strong> (Graph API v22.0). A Meta entrega cada mensagem do colaborador no webhook; o servidor responde, registra e avisa o painel em tempo real.</p>
+          <figure class="diagrama revelar">
+            <svg viewBox="0 0 960 400" role="img" aria-label="Arquitetura: colaborador no WhatsApp, WhatsApp Cloud API da Meta, servidor Node.js com webhook e máquina de estados, painel do RH; abaixo, MongoDB, e-mail ao RH e arquivo de contatos">
+              <path class="liga forte" d="M220 185 H 270"/><path class="liga forte" d="M470 185 H 520"/><path class="liga forte" d="M720 185 H 770"/>
+              <path class="liga" d="M620 250 V 310"/>
+              <path class="liga" d="M720 230 C 745 230, 745 339, 770 339"/>
+              <path class="liga" d="M520 230 C 495 230, 495 339, 470 339"/>
+              <g class="no"><rect x="30" y="150" width="190" height="70" rx="10"/><text x="125" y="180" text-anchor="middle">Colaborador</text><text class="sub" x="125" y="200" text-anchor="middle">WhatsApp no celular</text></g>
+              <g class="no dim"><rect x="270" y="150" width="200" height="70" rx="10"/><text x="370" y="180" text-anchor="middle">Cloud API (Meta)</text><text class="sub" x="370" y="200" text-anchor="middle">webhook · /messages · /media</text></g>
+              <g class="no fato"><rect x="520" y="120" width="200" height="130" rx="10"/><text x="620" y="150" text-anchor="middle">Node.js + Express</text><text class="sub" x="620" y="174" text-anchor="middle">POST /webhook</text><text class="sub" x="620" y="192" text-anchor="middle">máquina de estados</text><text class="sub" x="620" y="210" text-anchor="middle">fila de atendimento</text><text class="sub" x="620" y="228" text-anchor="middle">SSE /admin/events</text></g>
+              <g class="no"><rect x="770" y="150" width="160" height="70" rx="10"/><text x="850" y="180" text-anchor="middle">Painel /admin</text><text class="sub" x="850" y="200" text-anchor="middle">RH no navegador</text></g>
+              <g class="no apoio"><rect x="495" y="310" width="250" height="58" rx="10"/><text x="620" y="334" text-anchor="middle">MongoDB Atlas</text><text class="sub" x="620" y="354" text-anchor="middle">messages · contacts · blocked · topics</text></g>
+              <g class="no apoio"><rect x="770" y="310" width="160" height="58" rx="10"/><text x="850" y="334" text-anchor="middle">E-mail ao RH</text><text class="sub" x="850" y="354" text-anchor="middle">Nodemailer · Gmail</text></g>
+              <g class="no apoio"><rect x="270" y="310" width="200" height="58" rx="10"/><text x="370" y="334" text-anchor="middle">contacts.json</text><text class="sub" x="370" y="354" text-anchor="middle">cópia local dos contatos</text></g>
+            </svg>
+            <figcaption>Vermelho: o caminho de cada mensagem. Tracejado: persistência e notificação.</figcaption>
+          </figure>
+          <div class="tabela-rolagem revelar">
+            <table class="tabela">
+              <thead><tr><th>Ação</th><th>Chamada</th><th>Detalhe</th></tr></thead>
+              <tbody>
+                <tr><td>Verificar o webhook</td><td><code>GET /webhook</code></td><td>Confere <code>hub.verify_token</code> e devolve o <code>hub.challenge</code>; senão, 403</td></tr>
+                <tr><td>Receber mensagem</td><td><code>POST /webhook</code></td><td>Lê texto, resposta de botão ou lista, imagem, documento, áudio, voz, vídeo e figurinha; responde 200 mesmo em erro, para a Meta não reenviar</td></tr>
+                <tr><td>Responder em texto</td><td><code>/{PHONE_NUMBER_ID}/messages</code></td><td>Mensagens do bot e do atendente, com registro de quem enviou</td></tr>
+                <tr><td>Enviar anexo</td><td><code>/{PHONE_NUMBER_ID}/media</code> → <code>/messages</code></td><td>Sobe o arquivo (até 16 MB) e envia pelo id como imagem, vídeo, áudio ou documento</td></tr>
+                <tr><td>Iniciar conversa</td><td><code>/messages</code> com <code>type: template</code></td><td>Template aprovado pela Meta, com nome e idioma configuráveis (padrão <code>avisos_rh</code>, <code>pt_BR</code>)</td></tr>
+                <tr><td>Ver mídia recebida</td><td><code>GET /{mediaId}</code></td><td>Busca a URL temporária da Meta e repassa o arquivo ao navegador, sem expor o token</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <h3>Limite de envio</h3>
+          <div class="revelar">
+            <div class="mudanca"><div class="antes"><b>Problema</b>Várias mensagens seguidas para o mesmo número esbarram no limite da Meta (erro <code>#131056</code>, <em>pair rate limit</em>).</div><div class="seta">→</div><div class="depois"><b>Solução</b>Uma fila de promessas por destinatário, com intervalo mínimo de 900 ms (ajustável) e uma nova tentativa antes de registrar o erro.</div></div>
+          </div>
+        </section>
+
+        <!-- 05 -->
+        <section class="capitulo" id="c05">
+          <span class="rotulo-cap">05 · Painel do RH</span>
+          <h2>Um WhatsApp Web feito para a fila do RH.</h2>
+          <p>O painel é uma página servida pelo próprio servidor em <code>/admin</code>, em HTML, CSS e JavaScript puro. A lista lateral se divide em quatro abas, com contadores, busca e etiquetas de status e de assunto em cada conversa.</p>
+          <div class="grade g4 revelar">
+            <div class="cartao ambar"><h4>Na fila</h4><p>Quem pediu atendimento, com a posição (#1, #2…) e o assunto.</p></div>
+            <div class="cartao azul"><h4>Atendimento</h4><p>Conversas com o RH e conversas em que o robô ainda está ativo.</p></div>
+            <div class="cartao"><h4>Encerrados</h4><p>Atendimentos finalizados pelo RH, pelo colaborador ou por inatividade.</p></div>
+            <div class="cartao violeta"><h4>Contatos</h4><p>Nome e telefone de exibição editáveis; o WaId real não muda.</p></div>
+          </div>
+          <div class="tabela-rolagem revelar">
+            <table class="tabela">
+              <thead><tr><th>Ação no painel</th><th>O que faz</th></tr></thead>
+              <tbody>
+                <tr><td>Assumir</td><td>Tira da fila, para o cronômetro de inatividade e envia “Atendimento Humano iniciado, <em>nome</em>. Pode me explicar sua dúvida?”</td></tr>
+                <tr><td>Responder</td><td>Texto ou anexo (imagem, vídeo, áudio ou documento); a primeira resposta já assume a conversa</td></tr>
+                <tr><td>Encerrar</td><td>Envia a mensagem de encerramento; a próxima mensagem do colaborador recomeça o fluxo</td></tr>
+                <tr><td>Iniciar</td><td>Envia um template para abrir a conversa fora da janela de 24 horas, com aviso de possível cobrança</td></tr>
+                <tr><td>Bloquear / desbloquear</td><td>Encerra a conversa e faz o bot ignorar o número</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>Para ficar ao vivo, o painel combina <strong>Server-Sent Events</strong> (com sinal a cada 25 segundos para atravessar proxies) e uma <strong>consulta periódica a cada 5 segundos</strong>. Uma “impressão digital” da lista e da conversa aberta evita redesenhar a tela quando nada mudou, o que fazia as imagens piscarem.</p>
+          <div class="galeria revelar">
+            <figure><img src="assets/painel-fila.jpg" alt="Painel com a aba Na fila e a conversa do Colaborador 001, etiquetada como Ponto, com as ações Assumir, Iniciar, editar e Bloquear" loading="lazy" width="1440" height="900"><figcaption>Na fila: posição, assunto e mensagens não lidas.</figcaption></figure>
+            <figure><img src="assets/painel-atendimento.jpg" alt="Conversa em atendimento humano, com as respostas do atendente destacadas das mensagens do bot" loading="lazy" width="1440" height="900"><figcaption>Atendimento: mensagens do bot, do colaborador e do RH.</figcaption></figure>
+            <figure><img src="assets/painel-template.jpg" alt="Janela Iniciar conversa com o template avisos_rh, idioma pt_BR e o aviso de cobrança fora da janela de 24 horas" loading="lazy" width="1440" height="900"><figcaption>Iniciar conversa por template, com o aviso de cobrança.</figcaption></figure>
+            <figure><img src="assets/painel-contatos.jpg" alt="Aba Contatos com o botão Novo contato e um contato bloqueado aberto, com o aviso de que não receberá respostas do bot" loading="lazy" width="1440" height="900"><figcaption>Contatos e um número bloqueado.</figcaption></figure>
+          </div>
+        </section>
+
+        <!-- 06 -->
+        <section class="capitulo" id="c06">
+          <span class="rotulo-cap">06 · Dados e persistência</span>
+          <h2>Memória para responder rápido, Mongo para não esquecer.</h2>
+          <p>O fluxo do bot roda sobre estruturas em memória (estado, fila, sessões de holerite, cronômetros). Tudo o que o painel precisa depois de um reinício é espelhado no <strong>MongoDB Atlas</strong>, sem travar a resposta ao colaborador: se o banco oscilar, o bot continua respondendo.</p>
+          <div class="tabela-rolagem revelar">
+            <table class="tabela">
+              <thead><tr><th>Coleção</th><th>O que guarda</th><th>Por que existe</th></tr></thead>
+              <tbody>
+                <tr><td><code>messages</code></td><td>Uma mensagem por documento: número, data, autor (<code>user</code>, <code>bot</code>, <code>human</code>, <code>system</code>), texto e dados da mídia</td><td>Histórico completo no painel, mesmo após um deploy</td></tr>
+                <tr><td><code>contacts</code></td><td>Nome e telefone de exibição por WaId</td><td>O bot não pede o nome de novo a quem já se identificou</td></tr>
+                <tr><td><code>topics</code></td><td>Assunto do atendimento humano</td><td>A etiqueta volta junto com a conversa</td></tr>
+                <tr><td><code>blocked</code></td><td>Números bloqueados</td><td>O bloqueio continua valendo depois de reiniciar</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="revelar">
+            <div class="mudanca"><div class="antes"><b>Antes</b>Após um reinício, o estado em memória voltava vazio e toda conversa aparecia como “robô ativo”.</div><div class="seta">→</div><div class="depois"><b>Depois</b>O painel deduz o status pelo histórico: mensagem de encerramento → encerrada; última fala do RH → em atendimento; encaminhamento sem retomada → na fila, com a ordem refeita pelo horário.</div></div>
+            <div class="mudanca"><div class="antes"><b>Antes</b>O disco da hospedagem podia ser apagado a cada deploy, levando os contatos.</div><div class="seta">→</div><div class="depois"><b>Depois</b>Contatos gravados no arquivo local e espelhados no Mongo; a recarga roda em sequência (contatos, assuntos, conversas, bloqueios), limitada a 500 mensagens por conversa.</div></div>
+          </div>
+        </section>
+
+        <!-- 07 -->
+        <section class="capitulo" id="c07">
+          <span class="rotulo-cap">07 · Segurança</span>
+          <h2>Nenhum segredo no código; nenhum dado real na vitrine.</h2>
+          <p>Token, identificador do número, senhas e endereços ficam em variáveis de ambiente, e o painel do RH só abre com login. Na inicialização, os logs mostram apenas o <strong>tamanho</strong> do token e da senha de e-mail, para confirmar que foram carregados sem expor o valor.</p>
+          <div class="grade g2 revelar">
+            <div class="cartao verde"><h4>Painel do RH com login</h4><p>Todo o <code>/admin</code> (painel, conversas, contatos, envio de mensagens e anexos, atualizações ao vivo) e as rotas de teste exigem usuário e senha, vindos de <code>ADMIN_USER</code> e <code>ADMIN_PASSWORD</code>. Sem essas variáveis, o painel fica bloqueado, nunca aberto. A comparação da senha é feita em tempo constante.</p></div>
+            <div class="cartao verde"><h4>Webhook aberto só para a Meta</h4><p>O <code>/webhook</code> continua acessível, porque é por ele que a Meta entrega as mensagens; a verificação inicial usa o <code>VERIFY_TOKEN</code> da variável de ambiente.</p></div>
+            <div class="cartao verde"><h4>Variáveis de ambiente</h4><p><code>WHATSAPP_TOKEN</code>, <code>PHONE_NUMBER_ID</code>, <code>VERIFY_TOKEN</code>, <code>MONGODB_URI</code>, <code>SMTP_USER</code>, <code>SMTP_PASS</code>, <code>NOTIFY_TO</code>, <code>NOTIFY_FROM</code>, além de nomes de template e ajustes de envio.</p></div>
+            <div class="cartao verde"><h4>Mídia sem expor o token</h4><p>Arquivos recebidos são buscados pelo servidor e repassados ao navegador; o painel nunca vê a credencial da Meta. Os uploads temporários são apagados após o envio.</p></div>
+            <div class="cartao ambar"><h4>Código publicado sanitizado</h4><p>A cópia em <code>codigo-original/</code> é a do backend sem credenciais reais. Arquivos com links, senhas, tokens e acessos não foram incluídos nesta versão pública.</p></div>
+            <div class="cartao ambar"><h4>Demonstração isolada</h4><p>O painel publicado não fala com a Meta nem com banco algum: as chamadas são interceptadas no navegador e respondidas com cinco colaboradores fictícios.</p></div>
+          </div>
+        </section>
+
+        <!-- 08 -->
+        <section class="capitulo" id="c08">
+          <span class="rotulo-cap">08 · Demonstração</span>
+          <h2>No servidor, a Meta; aqui, tudo no navegador.</h2>
+          <div class="arquitetura revelar">
+            <div class="caixa"><span class="tag">Meta</span><b>WhatsApp Cloud API</b><ul><li>webhook verificado</li><li>texto, mídia e templates</li></ul></div>
+            <div class="seta">⇄</div>
+            <div class="caixa"><span class="tag">Koyeb</span><b>Node.js + Express</b><ul><li>22 rotas e máquina de estados</li><li>painel /admin com SSE</li><li>e-mail ao RH a cada chamado</li></ul></div>
+            <div class="seta">⇄</div>
+            <div class="caixa"><span class="tag">MongoDB Atlas</span><b>Dados</b><ul><li>mensagens e contatos</li><li>assuntos e bloqueios</li></ul></div>
+          </div>
+          <p>Nesta demonstração não há servidor. O painel substitui <code>fetch</code> e <code>EventSource</code> por versões locais que respondem com conversas inventadas, então assumir, responder, encerrar, bloquear, editar contato e iniciar por template funcionam de verdade na tela. O botão <strong>Ver fluxo do usuário</strong> abre um celular simulado com os menus do bot: ao chegar ao atendimento humano, a conversa aparece na fila do painel.</p>
+          <h3>Tecnologias</h3>
+          <div class="pilulas">
+            <span>Node.js</span><span>Express</span><span>WhatsApp Cloud API</span><span>Graph API v22.0</span><span>Axios</span><span>MongoDB Atlas</span><span>Mongoose</span><span>Server-Sent Events</span><span>Multer</span><span>Nodemailer</span><span>JavaScript sem framework</span><span>Koyeb</span>
+          </div>
+          <div class="encerramento revelar">
+            <span class="rotulo-cap">Experimente</span>
+            <h2>Seja o colaborador e veja a conversa chegar ao RH.</h2>
+            <p class="texto">Sugestão de roteiro: clique em “Ver fluxo do usuário”, informe um nome e sobrenome, escolha 1 (Ponto) e um tutorial. Depois volte ao menu, peça um atendente e escolha o assunto: a conversa entra na fila do painel, pronta para você assumir.</p>
+            <div class="acoes"><a class="btn primario" href="painel/">Abrir o painel →</a><a class="btn" href="https://github.com/lariantunez/Bot-RH-Meta-Painel">Ver o código</a></div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <span><strong>Larissa Antunez</strong> · Analytics &amp; Desenvolvimento</span>
+      <span>Projeto real · demonstração com dados fictícios</span>
+    </div>
+  </footer>
+  <script src="assets/estudo.js"></script>
+</body>
+</html>
