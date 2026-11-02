@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <script src="../assets/idioma-estudo.js"></script>
+  <link rel="alternate" hreflang="pt-BR" href="https://lariantunez.github.io/Bot-RH-Meta-Painel/">
+  <link rel="alternate" hreflang="en" href="https://lariantunez.github.io/Bot-RH-Meta-Painel/en/">
+  <link rel="alternate" hreflang="es" href="https://lariantunez.github.io/Bot-RH-Meta-Painel/es/">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HR WhatsApp Bot · Case study</title>
+  <meta name="description" content="Case study: an HR bot on Meta's WhatsApp Cloud API, with menu-based self-service, a human support queue and a dashboard for HR. Demo with fictional conversations.">
+  <meta property="og:title" content="HR WhatsApp Bot · HR self-service on WhatsApp, with a human queue">
+  <meta property="og:description" content="Menus and tutorials on WhatsApp, a human support queue tagged by topic, and a dashboard where HR takes over, replies to and closes conversations.">
+  <meta property="og:image" content="../assets/fluxo-fila.jpg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/estudo.css">
+  <style>
+    /* Identidade do Bot RH Meta: verde do WhatsApp sobre grafite. */
+    :root { --accent: #00a884; --accent-2: #00a884; --on-accent: #03201a; --accent-wash: rgba(0, 168, 132, 0.12); }
+    :root[data-theme="light"] { --accent: #007a62; --accent-2: #007a62; --on-accent: #fff; --accent-wash: rgba(0, 122, 98, 0.09); }
+    @media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) { --accent: #007a62; --accent-2: #007a62; --on-accent: #fff; --accent-wash: rgba(0, 122, 98, 0.09); } }
+  </style>
+</head>
+<body>
+  <header class="topo">
+    <div class="wrap">
+      <a class="marca" href="#inicio"><i></i>HR WhatsApp Bot</a>
+      <nav>
+        <a class="opcional" href="https://lariantunez.github.io/Vitrine-de-projetos/?lang=en">Portfolio</a>
+        <a class="opcional" href="#c00">Case study</a>
+        <a class="opcional" href="https://github.com/lariantunez/Bot-RH-Meta-Painel">Code</a>
+        <a href="../painel/">Open dashboard</a>
+        <div class="idiomas" role="group" aria-label="Language"><a href="../?lang=pt" data-idioma="pt" hreflang="pt-BR">PT</a><a href="./" data-idioma="en" hreflang="en" aria-current="true">EN</a><a href="../es/" data-idioma="es" hreflang="es">ES</a></div>
+        <button class="btn-tema" id="tema" type="button" aria-label="Toggle theme">☀</button>
+      </nav>
+      <span class="progresso"></span>
+    </div>
+  </header>
+
+  <main id="inicio">
+    <section class="abertura">
+      <div class="wrap">
+        <span class="selo-topo"><b>●</b> WhatsApp Cloud API · demo with fictional conversations</span>
+        <h1>HR on WhatsApp: the bot answers, <em>the team takes over</em>.</h1>
+        <p class="lead">An HR support bot integrated with Meta's official WhatsApp API. Employees resolve time clock, payroll and benefits questions on their own with step-by-step tutorials; when they need a person, they pick a topic and join a queue that HR follows in a dashboard similar to WhatsApp Web.</p>
+        <div class="acoes">
+          <a class="btn primario" href="../painel/">Explore the dashboard →</a>
+          <a class="btn" href="#c00">Read the case study</a>
+        </div>
+        <div class="numeros">
+          <div><strong>4</strong><span>options in the bot's main menu</span></div>
+          <div><strong>10</strong><span>step-by-step tutorials, each with a video</span></div>
+          <div><strong>6</strong><span>topics for tagging human support</span></div>
+          <div><strong>14</strong><span>states in the conversation state machine</span></div>
+          <div><strong>22</strong><span>server routes, 14 in the dashboard API</span></div>
+        </div>
+        <figure class="vitrine">
+          <div class="barra-janela"><i></i><i></i><i></i><span>painel/ · support queue + employee simulation (fictional data)</span></div>
+          <img src="../assets/fluxo-fila.jpg" alt="HR dashboard with a newly arrived conversation in the queue, tagged as Time clock, next to the simulated employee WhatsApp choosing the topic and being routed to human support" width="1440" height="900">
+        </figure>
+      </div>
+    </section>
+
+    <div class="wrap livro">
+      <aside class="indice" aria-label="Chapters">
+        <p>Chapters</p>
+        <ol>
+          <li><a href="#c00"><b>00</b>The challenge</a></li>
+          <li><a href="#c01"><b>01</b>Principles</a></li>
+          <li><a href="#c02"><b>02</b>Conversation flow</a></li>
+          <li><a href="#c03"><b>03</b>States and rules</a></li>
+          <li><a href="#c04"><b>04</b>WhatsApp Cloud API</a></li>
+          <li><a href="#c05"><b>05</b>HR dashboard</a></li>
+          <li><a href="#c06"><b>06</b>Data and persistence</a></li>
+          <li><a href="#c07"><b>07</b>Security</a></li>
+          <li><a href="#c08"><b>08</b>Demo</a></li>
+        </ol>
+      </aside>
+
+      <div class="capitulos">
+        <!-- 00 -->
+        <section class="capitulo" id="c00">
+          <span class="rotulo-cap">00 · The challenge</span>
+          <h2>The same questions, every day, over WhatsApp.</h2>
+          <p>How do I clock in? Where do I see my timesheet? How do I send a medical certificate? Where is my income statement? Many of the questions that reach HR have a known answer that lives in a time clock app (Multi / My Ahgora) or in the <strong>Meu RH</strong> portal. Others need someone to look at the case.</p>
+          <p class="destaque revelar">The bot handles the step-by-step questions and hands HR, already organized, whatever needs a person.</p>
+          <div class="grade g3 revelar">
+            <div class="cartao azul"><span class="num">SELF-SERVICE</span><h4>Menus and tutorials</h4><p>Time clock, payroll and benefits in numbered menus, with step-by-step instructions and a short video for each task.</p></div>
+            <div class="cartao ambar"><span class="num">QUEUE</span><h4>Human support</h4><p>The employee gives their name, picks a topic and joins an ordered queue; HR gets an email for every new request.</p></div>
+            <div class="cartao verde"><span class="num">DASHBOARD</span><h4>Support in the browser</h4><p>HR sees the queue, takes over the conversation, replies with text or an attachment, closes and blocks, all from the same official number.</p></div>
+          </div>
+        </section>
+
+        <!-- 01 -->
+        <section class="capitulo" id="c01">
+          <span class="rotulo-cap">01 · Principles</span>
+          <h2>The bot leads, but never runs over the person.</h2>
+          <p>Four rules show up throughout the code, from the webhook to the dashboard:</p>
+          <div class="grade g2 revelar">
+            <div class="cartao"><span class="num">01</span><h4>When HR takes over, the bot goes quiet</h4><p>In the <code>manual</code> state the webhook only logs the message and does not reply. Sending any message from the dashboard takes the conversation out of the queue and puts it in that state.</p></div>
+            <div class="cartao"><span class="num">02</span><h4>No conversation gets stuck</h4><p>An invalid answer brings the menu back; 3 minutes of inactivity end the automated session; anyone in the queue can go back to the menu at any time.</p></div>
+            <div class="cartao"><span class="num">03</span><h4>The dashboard survives a restart</h4><p>Messages, contacts, topics and blocks are stored in MongoDB. When the server starts, the history is reloaded and each conversation's status is inferred from its messages.</p></div>
+            <div class="cartao"><span class="num">04</span><h4>Respect Meta's limits</h4><p>Sends are queued per recipient, with a minimum interval and a retry, and the dashboard shows a fixed notice: messages outside the 24-hour window may be charged.</p></div>
+          </div>
+        </section>
+
+        <!-- 02 -->
+        <section class="capitulo" id="c02">
+          <span class="rotulo-cap">02 · Conversation flow</span>
+          <h2>From “hi” to a tutorial or the queue, in a few taps.</h2>
+          <p>Every new conversation starts with a greeting and a request for the <strong>full name</strong> (at least two words with letters). Anyone who has already given their name goes straight to the menu. From there, each numeric answer leads to a tutorial, a submenu or the human queue.</p>
+          <div class="fluxo revelar" role="img" aria-label="Flow: greeting and name, main menu with four options, time clock, payroll, payslip and topic submenus, and outcomes: tutorial, human queue or closing">
+            <div class="coluna"><b>1 · Entry</b>
+              <div class="item">Greeting<small>HR virtual assistant</small></div>
+              <div class="item">Full name<small>first and last name, validated</small></div>
+            </div>
+            <div class="seta">→</div>
+            <div class="coluna"><b>2 · Main menu</b>
+              <div class="item erp">1 · Time clock<small>Multi / My Ahgora</small></div>
+              <div class="item erp">2 · Payroll &amp; Benefits<small>Meu RH</small></div>
+              <div class="item adv">3 · Payslip questions<small>text + screenshot</small></div>
+              <div class="item adv">4 · Talk to an agent<small>topic selection</small></div>
+            </div>
+            <div class="seta">→</div>
+            <div class="coluna"><b>3 · Submenus</b>
+              <div class="item erp">Time clock<small>9 options, 7 tutorials</small></div>
+              <div class="item erp">Payroll &amp; Benefits<small>5 options, 3 tutorials</small></div>
+              <div class="item adv">Payslip<small>question as text and image</small></div>
+              <div class="item adv">Topic<small>6 tags</small></div>
+            </div>
+            <div class="seta">→</div>
+            <div class="coluna"><b>4 · Outcome</b>
+              <div class="item dim">Tutorial + video<small>and “Deseja voltar ao menu?” (back to menu?)</small></div>
+              <div class="item fato">Human queue<small>position visible only in the dashboard</small></div>
+              <div class="item">Closing<small>“não” (no) or 3 min without a reply</small></div>
+            </div>
+          </div>
+          <div class="tabela-rolagem revelar">
+            <table class="tabela">
+              <thead><tr><th>Menu</th><th>Options</th><th>What happens</th></tr></thead>
+              <tbody>
+                <tr><td>Main menu</td><td>Time clock · Payroll &amp; Benefits · Payslip questions · Talk to an agent</td><td>Opens the submenu, starts collecting the payslip question or asks for the support topic</td></tr>
+                <tr><td>Time clock</td><td>Clock in · Check time records · Request excused hours · Cancel a punch · Add a punch · Send a medical certificate · Approve timesheet · Talk to an agent · Back to menu</td><td>Options 1 to 7 send the tutorial and ask whether the person wants to go back to the main menu</td></tr>
+                <tr><td>Payroll &amp; Benefits</td><td>Payment history · Salary history · Income statement · Talk to an agent · Back to menu</td><td>Options 1 to 3 send the tutorial; 4 goes to human support; 5 goes back to the start</td></tr>
+                <tr><td>Support topic</td><td>Benefits · Time clock · Payroll · Vacation · Termination · Payroll loan</td><td>Accepts the number or free text (“batida”, “demissão”, “salário”…) and tags the conversation in the dashboard</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="galeria revelar">
+            <figure><img src="../assets/fluxo-ponto.jpg" alt="Simulated employee WhatsApp showing the Time clock submenu with nine options and shortcut buttons" loading="lazy" width="1440" height="900"><figcaption>Time clock submenu in the employee simulation.</figcaption></figure>
+            <figure><img src="../assets/fluxo-tutorial.jpg" alt="Simulated WhatsApp with the step-by-step guide for requesting excused hours and the question asking whether to return to the Main Menu, with Yes and No options" loading="lazy" width="1440" height="900"><figcaption>Tutorial sent, followed by the question about returning to the menu.</figcaption></figure>
+          </div>
+        </section>
+
+        <!-- 03 -->
+        <section class="capitulo" id="c03">
+          <span class="rotulo-cap">03 · States and rules</span>
+          <h2>One state machine per WhatsApp number.</h2>
+          <p>Each conversation keeps track of where the employee is. There are 14 states, from <code>idle</code> to <code>ended</code>, and every incoming message is interpreted in light of the current state: the same “1” means Time clock in the main menu and “Clock in” in the submenu.</p>
+          <div class="grade g3 revelar">
+            <div class="cartao azul"><h4>Bot in charge</h4><p><code>await_user_name</code>, <code>await_main_choice</code>, <code>await_ponto_choice</code>, <code>await_folha_choice</code>, <code>await_back_menu</code>.</p></div>
+            <div class="cartao ambar"><h4>Path to the queue</h4><p><code>await_holerite_text</code>, <code>await_holerite_image</code>, <code>await_holerite_forward</code>, <code>await_human_topic</code>, <code>handover</code>, <code>await_handover_choice</code>.</p></div>
+            <div class="cartao verde"><h4>With HR or closed</h4><p><code>manual</code> (the bot does not reply), <code>ended</code> and <code>idle</code> (the next message starts over with the greeting).</p></div>
+          </div>
+          <h3>The payslip question</h3>
+          <p>It is the only path that collects material before reaching HR. The conversation is tagged <strong>Payslip</strong> right away and only moves on once it has both pieces:</p>
+          <div class="etapas revelar">
+            <div class="etapa"><div><h4>The employee picks option 3</h4><p>the topic is saved immediately, without asking</p></div></div>
+            <div class="etapa"><div><h4>Writes the question as text</h4><p>if the image comes first, the bot accepts it and asks for the text</p></div></div>
+            <div class="etapa"><div><h4>Sends a screenshot of the payslip</h4><p>while the image is missing, the bot keeps asking for it</p></div></div>
+            <div class="etapa"><div><h4>Confirmation and routing</h4><p>after 3 seconds, the conversation joins the queue and HR gets the email</p></div></div>
+          </div>
+          <h3>Rules that prevent dead ends</h3>
+          <div class="grade g2 revelar">
+            <div class="cartao"><h4>Context recovery</h4><p>If the state gets out of sync but the last menu sent (less than 5 minutes ago) was Time clock or Payroll, a valid number is redirected to the right submenu.</p></div>
+            <div class="cartao"><h4>Writing while in the queue</h4><p>The person chooses between returning to the main menu (and leaving the queue) or continuing to wait, without taking two spots in the queue.</p></div>
+            <div class="cartao"><h4>Inactivity</h4><p>Three minutes without a reply end the automated session with a thank-you message. The timer does not run for anyone in the queue or with HR.</p></div>
+            <div class="cartao"><h4>Blocked contact</h4><p>Messages from blocked numbers are ignored as soon as they hit the webhook, before any reply.</p></div>
+          </div>
+        </section>
+
+        <!-- 04 -->
+        <section class="capitulo" id="c04">
+          <span class="rotulo-cap">04 · WhatsApp Cloud API</span>
+          <h2>A webhook to listen, the Graph API to reply.</h2>
+          <p>The server talks to Meta through the <strong>WhatsApp Cloud API</strong> (Graph API v22.0). Meta delivers each employee message to the webhook; the server replies, logs it and notifies the dashboard in real time.</p>
+          <figure class="diagrama revelar">
+            <svg viewBox="0 0 960 400" role="img" aria-label="Architecture: employee on WhatsApp, Meta's WhatsApp Cloud API, Node.js server with webhook and state machine, HR dashboard; below, MongoDB, email to HR and contacts file">
+              <path class="liga forte" d="M220 185 H 270"/><path class="liga forte" d="M470 185 H 520"/><path class="liga forte" d="M720 185 H 770"/>
+              <path class="liga" d="M620 250 V 310"/>
+              <path class="liga" d="M720 230 C 745 230, 745 339, 770 339"/>
+              <path class="liga" d="M520 230 C 495 230, 495 339, 470 339"/>
+              <g class="no"><rect x="30" y="150" width="190" height="70" rx="10"/><text x="125" y="180" text-anchor="middle">Employee</text><text class="sub" x="125" y="200" text-anchor="middle">WhatsApp on their phone</text></g>
+              <g class="no dim"><rect x="270" y="150" width="200" height="70" rx="10"/><text x="370" y="180" text-anchor="middle">Cloud API (Meta)</text><text class="sub" x="370" y="200" text-anchor="middle">webhook · /messages · /media</text></g>
+              <g class="no fato"><rect x="520" y="120" width="200" height="130" rx="10"/><text x="620" y="150" text-anchor="middle">Node.js + Express</text><text class="sub" x="620" y="174" text-anchor="middle">POST /webhook</text><text class="sub" x="620" y="192" text-anchor="middle">state machine</text><text class="sub" x="620" y="210" text-anchor="middle">support queue</text><text class="sub" x="620" y="228" text-anchor="middle">SSE /admin/events</text></g>
+              <g class="no"><rect x="770" y="150" width="160" height="70" rx="10"/><text x="850" y="180" text-anchor="middle">Dashboard /admin</text><text class="sub" x="850" y="200" text-anchor="middle">HR in the browser</text></g>
+              <g class="no apoio"><rect x="495" y="310" width="250" height="58" rx="10"/><text x="620" y="334" text-anchor="middle">MongoDB Atlas</text><text class="sub" x="620" y="354" text-anchor="middle">messages · contacts · blocked · topics</text></g>
+              <g class="no apoio"><rect x="770" y="310" width="160" height="58" rx="10"/><text x="850" y="334" text-anchor="middle">Email to HR</text><text class="sub" x="850" y="354" text-anchor="middle">Nodemailer · Gmail</text></g>
+              <g class="no apoio"><rect x="270" y="310" width="200" height="58" rx="10"/><text x="370" y="334" text-anchor="middle">contacts.json</text><text class="sub" x="370" y="354" text-anchor="middle">local copy of contacts</text></g>
+            </svg>
+            <figcaption>Red: the path of each message. Dashed: persistence and notification.</figcaption>
+          </figure>
+          <div class="tabela-rolagem revelar">
+            <table class="tabela">
+              <thead><tr><th>Action</th><th>Call</th><th>Detail</th></tr></thead>
+              <tbody>
+                <tr><td>Verify the webhook</td><td><code>GET /webhook</code></td><td>Checks <code>hub.verify_token</code> and returns <code>hub.challenge</code>; otherwise, 403</td></tr>
+                <tr><td>Receive a message</td><td><code>POST /webhook</code></td><td>Reads text, button or list replies, images, documents, audio, voice notes, video and stickers; returns 200 even on error so Meta does not resend</td></tr>
+                <tr><td>Reply with text</td><td><code>/{PHONE_NUMBER_ID}/messages</code></td><td>Bot and agent messages, logging who sent each one</td></tr>
+                <tr><td>Send an attachment</td><td><code>/{PHONE_NUMBER_ID}/media</code> → <code>/messages</code></td><td>Uploads the file (up to 16 MB) and sends it by id as an image, video, audio or document</td></tr>
+                <tr><td>Start a conversation</td><td><code>/messages</code> with <code>type: template</code></td><td>Meta-approved template with configurable name and language (default <code>avisos_rh</code>, <code>pt_BR</code>)</td></tr>
+                <tr><td>View received media</td><td><code>GET /{mediaId}</code></td><td>Fetches Meta's temporary URL and relays the file to the browser without exposing the token</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <h3>Send rate limit</h3>
+          <div class="revelar">
+            <div class="mudanca"><div class="antes"><b>Problem</b>Several messages in a row to the same number hit Meta's limit (error <code>#131056</code>, <em>pair rate limit</em>).</div><div class="seta">→</div><div class="depois"><b>Solution</b>A promise queue per recipient, with a minimum interval of 900 ms (configurable) and one retry before logging the error.</div></div>
+          </div>
+        </section>
+
+        <!-- 05 -->
+        <section class="capitulo" id="c05">
+          <span class="rotulo-cap">05 · HR dashboard</span>
+          <h2>A WhatsApp Web built for the HR queue.</h2>
+          <p>The dashboard is a page served by the server itself at <code>/admin</code>, in plain HTML, CSS and JavaScript. The sidebar list is split into four tabs, with counters, search, and status and topic tags on each conversation.</p>
+          <div class="grade g4 revelar">
+            <div class="cartao ambar"><h4>In queue</h4><p>People who asked for support, with their position (#1, #2…) and topic.</p></div>
+            <div class="cartao azul"><h4>In progress</h4><p>Conversations with HR and conversations where the bot is still active.</p></div>
+            <div class="cartao"><h4>Closed</h4><p>Sessions ended by HR, by the employee or due to inactivity.</p></div>
+            <div class="cartao violeta"><h4>Contacts</h4><p>Editable display name and phone number; the real WaId does not change.</p></div>
+          </div>
+          <div class="tabela-rolagem revelar">
+            <table class="tabela">
+              <thead><tr><th>Dashboard action</th><th>What it does</th></tr></thead>
+              <tbody>
+                <tr><td>Take over</td><td>Removes from the queue, stops the inactivity timer and sends “Atendimento Humano iniciado, <em>nome</em>. Pode me explicar sua dúvida?” (Human support started, name. Can you tell me your question?)</td></tr>
+                <tr><td>Reply</td><td>Text or attachment (image, video, audio or document); the first reply already takes over the conversation</td></tr>
+                <tr><td>Close</td><td>Sends the closing message; the employee's next message restarts the flow</td></tr>
+                <tr><td>Start</td><td>Sends a template to open the conversation outside the 24-hour window, with a notice about possible charges</td></tr>
+                <tr><td>Block / unblock</td><td>Closes the conversation and makes the bot ignore the number</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>To stay live, the dashboard combines <strong>Server-Sent Events</strong> (with a heartbeat every 25 seconds to get through proxies) and <strong>polling every 5 seconds</strong>. A “fingerprint” of the list and the open conversation avoids redrawing the screen when nothing has changed, which used to make images flicker.</p>
+          <div class="galeria revelar">
+            <figure><img src="../assets/painel-fila.jpg" alt="Dashboard with the In queue tab and the conversation of Colaborador 001, tagged as Time clock, with the Take over, Start, edit and Block actions" loading="lazy" width="1440" height="900"><figcaption>In queue: position, topic and unread messages.</figcaption></figure>
+            <figure><img src="../assets/painel-atendimento.jpg" alt="Conversation in human support, with the agent's replies highlighted apart from the bot's messages" loading="lazy" width="1440" height="900"><figcaption>In progress: messages from the bot, the employee and HR.</figcaption></figure>
+            <figure><img src="../assets/painel-template.jpg" alt="Start conversation window with the avisos_rh template, pt_BR language and the notice about charges outside the 24-hour window" loading="lazy" width="1440" height="900"><figcaption>Starting a conversation by template, with the charges notice.</figcaption></figure>
+            <figure><img src="../assets/painel-contatos.jpg" alt="Contacts tab with the New contact button and an open blocked contact, with a notice that it will not receive bot replies" loading="lazy" width="1440" height="900"><figcaption>Contacts and a blocked number.</figcaption></figure>
+          </div>
+        </section>
+
+        <!-- 06 -->
+        <section class="capitulo" id="c06">
+          <span class="rotulo-cap">06 · Data and persistence</span>
+          <h2>Memory to reply fast, Mongo so nothing is forgotten.</h2>
+          <p>The bot flow runs on in-memory structures (state, queue, payslip sessions, timers). Everything the dashboard needs after a restart is mirrored to <strong>MongoDB Atlas</strong> without holding up the reply to the employee: if the database hiccups, the bot keeps answering.</p>
+          <div class="tabela-rolagem revelar">
+            <table class="tabela">
+              <thead><tr><th>Collection</th><th>What it stores</th><th>Why it exists</th></tr></thead>
+              <tbody>
+                <tr><td><code>messages</code></td><td>One message per document: number, date, author (<code>user</code>, <code>bot</code>, <code>human</code>, <code>system</code>), text and media data</td><td>Full history in the dashboard, even after a deploy</td></tr>
+                <tr><td><code>contacts</code></td><td>Display name and phone number per WaId</td><td>The bot does not ask again for the name of someone who has already identified themselves</td></tr>
+                <tr><td><code>topics</code></td><td>Human support topic</td><td>The tag comes back along with the conversation</td></tr>
+                <tr><td><code>blocked</code></td><td>Blocked numbers</td><td>The block stays in effect after a restart</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="revelar">
+            <div class="mudanca"><div class="antes"><b>Before</b>After a restart, the in-memory state came back empty and every conversation showed up as “bot active”.</div><div class="seta">→</div><div class="depois"><b>After</b>The dashboard infers the status from the history: closing message → closed; last message from HR → in progress; handover with no follow-up → in queue, with the order rebuilt by timestamp.</div></div>
+            <div class="mudanca"><div class="antes"><b>Before</b>The hosting disk could be wiped on every deploy, taking the contacts with it.</div><div class="seta">→</div><div class="depois"><b>After</b>Contacts are saved to the local file and mirrored to Mongo; the reload runs in sequence (contacts, topics, conversations, blocks), capped at 500 messages per conversation.</div></div>
+          </div>
+        </section>
+
+        <!-- 07 -->
+        <section class="capitulo" id="c07">
+          <span class="rotulo-cap">07 · Security</span>
+          <h2>No secrets in the code; no real data in the portfolio.</h2>
+          <p>Token, phone number ID, passwords and addresses live in environment variables, and the HR dashboard only opens with a login. At startup, the logs show only the <strong>length</strong> of the token and the email password, to confirm they were loaded without exposing their values.</p>
+          <div class="grade g2 revelar">
+            <div class="cartao verde"><h4>HR dashboard behind a login</h4><p>All of <code>/admin</code> (dashboard, conversations, contacts, sending messages and attachments, live updates) and the test routes require a username and password, taken from <code>ADMIN_USER</code> and <code>ADMIN_PASSWORD</code>. Without these variables, the dashboard stays locked, never open. The password comparison runs in constant time.</p></div>
+            <div class="cartao verde"><h4>Webhook open only for Meta</h4><p><code>/webhook</code> remains reachable, since that is how Meta delivers messages; the initial verification uses the <code>VERIFY_TOKEN</code> from the environment variable.</p></div>
+            <div class="cartao verde"><h4>Environment variables</h4><p><code>WHATSAPP_TOKEN</code>, <code>PHONE_NUMBER_ID</code>, <code>VERIFY_TOKEN</code>, <code>MONGODB_URI</code>, <code>SMTP_USER</code>, <code>SMTP_PASS</code>, <code>NOTIFY_TO</code>, <code>NOTIFY_FROM</code>, plus template names and send settings.</p></div>
+            <div class="cartao verde"><h4>Media without exposing the token</h4><p>Received files are fetched by the server and relayed to the browser; the dashboard never sees Meta's credential. Temporary uploads are deleted after sending.</p></div>
+            <div class="cartao ambar"><h4>Sanitized published code</h4><p>The copy in <code>codigo-original/</code> is the backend without real credentials. Files with links, passwords, tokens and access details were not included in this public version.</p></div>
+            <div class="cartao ambar"><h4>Isolated demo</h4><p>The published dashboard does not talk to Meta or to any database: calls are intercepted in the browser and answered with five fictional employees.</p></div>
+          </div>
+        </section>
+
+        <!-- 08 -->
+        <section class="capitulo" id="c08">
+          <span class="rotulo-cap">08 · Demo</span>
+          <h2>On the server, Meta; here, everything in the browser.</h2>
+          <div class="arquitetura revelar">
+            <div class="caixa"><span class="tag">Meta</span><b>WhatsApp Cloud API</b><ul><li>verified webhook</li><li>text, media and templates</li></ul></div>
+            <div class="seta">⇄</div>
+            <div class="caixa"><span class="tag">Koyeb</span><b>Node.js + Express</b><ul><li>22 routes and a state machine</li><li>/admin dashboard with SSE</li><li>email to HR for every request</li></ul></div>
+            <div class="seta">⇄</div>
+            <div class="caixa"><span class="tag">MongoDB Atlas</span><b>Data</b><ul><li>messages and contacts</li><li>topics and blocks</li></ul></div>
+          </div>
+          <p>This demo has no server. The dashboard replaces <code>fetch</code> and <code>EventSource</code> with local versions that answer with made-up conversations, so taking over, replying, closing, blocking, editing a contact and starting by template really work on screen. The <strong>Ver fluxo do usuário</strong> (view user flow) button opens a simulated phone with the bot's menus: once you reach human support, the conversation shows up in the dashboard queue.</p>
+          <h3>Technologies</h3>
+          <div class="pilulas">
+            <span>Node.js</span><span>Express</span><span>WhatsApp Cloud API</span><span>Graph API v22.0</span><span>Axios</span><span>MongoDB Atlas</span><span>Mongoose</span><span>Server-Sent Events</span><span>Multer</span><span>Nodemailer</span><span>Framework-free JavaScript</span><span>Koyeb</span>
+          </div>
+          <div class="encerramento revelar">
+            <span class="rotulo-cap">Try it</span>
+            <h2>Be the employee and watch the conversation reach HR.</h2>
+            <p class="texto">Suggested walkthrough: click “Ver fluxo do usuário”, enter a first and last name, choose 1 (Time clock) and a tutorial. Then go back to the menu, ask for an agent and pick a topic: the conversation joins the dashboard queue, ready for you to take over.</p>
+            <div class="acoes"><a class="btn primario" href="../painel/">Open the dashboard →</a><a class="btn" href="https://github.com/lariantunez/Bot-RH-Meta-Painel">View the code</a></div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <span><strong>Larissa Antunez</strong> · Analytics &amp; Development</span>
+      <span>Real project · demo with fictional data</span>
+    </div>
+  </footer>
+  <script src="../assets/estudo.js"></script>
+</body>
+</html>
