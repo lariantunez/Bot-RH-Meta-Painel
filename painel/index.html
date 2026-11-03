@@ -157,7 +157,8 @@ button.warn:hover{background:rgba(240,165,0,.22);}
 }
 .composer-row{display:flex;gap:8px;align-items:flex-end;}
 .composer textarea{
-  flex:1;resize:none;min-height:44px;max-height:140px;padding:11px 14px;
+  flex:1;resize:none;min-height:44px;max-height:50vh;padding:11px 14px;
+  box-sizing:border-box;overflow-y:hidden;
   border-radius:10px;border:none;background:var(--search-bg);color:var(--text);
   outline:none;font-size:14px;line-height:1.4;
 }
@@ -987,12 +988,12 @@ async function sendMessage(){
     const fd = new FormData();
     fd.append('file', file);
     if(t) fd.append('caption', t);
-    $('text').value=''; clearAttach();
+    $('text').value=''; ajustarAlturaTexto(); clearAttach();
     await fetch('/admin/api/conversation/'+encodeURIComponent(activeId)+'/media', {method:'POST', body:fd});
     return;
   }
   if(!t) return;
-  $('text').value='';
+  $('text').value=''; ajustarAlturaTexto();
   await fetch('/admin/api/conversation/'+encodeURIComponent(activeId)+'/message', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:t})});
 }
 
@@ -1109,7 +1110,18 @@ $('btnStartConv').onclick=()=>{ window.openStartModal && window.openStartModal()
 // ──────────────────────────────────────────────────────────────────────────
 
 const _textEl=$('text');
-if(_textEl) _textEl.addEventListener('keydown',(e)=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); sendMessage(); }});
+// Caixa de texto cresce conforme o texto (igual ao WhatsApp); só rola ao passar de metade da tela.
+function ajustarAlturaTexto(){
+  if(!_textEl) return;
+  _textEl.style.height='auto';
+  _textEl.style.height=_textEl.scrollHeight+'px';
+  _textEl.style.overflowY = _textEl.scrollHeight > _textEl.clientHeight ? 'auto' : 'hidden';
+}
+if(_textEl){
+  _textEl.addEventListener('keydown',(e)=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); sendMessage(); }});
+  _textEl.addEventListener('input', ajustarAlturaTexto);
+  window.addEventListener('resize', ajustarAlturaTexto);
+}
 const _qEl=$('q');
 if(_qEl){
   _qEl.addEventListener('input', ()=>{

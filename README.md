@@ -17,7 +17,7 @@ Boa parte das perguntas que chegam ao RH pelo WhatsApp se repete todo dia (como 
 - **Máquina de estados com 14 estados** por número de WhatsApp. A mesma resposta "1" significa coisas diferentes conforme o ponto da conversa.
 - **Menus e 10 tutoriais** com passo a passo e vídeo curto para cada tarefa.
 - **Fila de atendimento humano** com 6 assuntos para etiquetar o chamado e aviso por e-mail ao RH a cada novo chamado.
-- **Painel do RH** com abas (na fila, em atendimento, encerrados, contatos), envio de texto e anexos e atualização em tempo real.
+- **Painel do RH** com abas (na fila, em atendimento, encerrados, contatos), envio de texto e anexos, caixa de texto que cresce com a mensagem (como no WhatsApp) e atualização em tempo real.
 - **Regras contra becos sem saída:** resgate de contexto, encerramento por inatividade de 3 minutos e bloqueio de contatos.
 
 ## Decisões técnicas
